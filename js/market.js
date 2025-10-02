@@ -1,0 +1,125 @@
+// js/market.js - creates charts and wires up market filters
+// Uses Chart.js loaded in the page
+document.addEventListener('DOMContentLoaded', function(){
+  // Render region filters
+  const regionFilters = ['Western','North Rift','Central','Upper Eastern','Galana Kulalu'];
+  const regionContainer = document.getElementById('region-filters');
+  if(regionContainer){
+    regionFilters.forEach((r,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (i===0 ? ' active' : '');
+      btn.textContent = r;
+      btn.addEventListener('click', ()=> {
+        document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      regionContainer.appendChild(btn);
+    });
+  }
+
+  // Create analytics cards (high and low moving) with basic interactivity
+  const analyticsRoot = document.getElementById('market-analytics');
+  if(analyticsRoot){
+    analyticsRoot.innerHTML = `
+      <div class="analytics-card" id="high-moving-products">
+        <h3>Highest Moving Products</h3>
+        <p class="click-hint">Click on products to view details</p>
+        <ul class="product-list">
+          <li data-product="avocado">Avocado <span>KES 800/kg</span></li>
+          <li data-product="maize">Maize <span>KES 3,500/bag</span></li>
+          <li data-product="beans">Beans <span>KES 220/kg</span></li>
+          <li data-product="tomatoes">Tomatoes <span>KES 150/kg</span></li>
+        </ul>
+        <div class="product-detail" id="avocado-detail">
+          <h4>Avocado Market Details</h4>
+          <p><strong>Current Price:</strong> KES 800/kg</p>
+          <div class="price-graph"><canvas id="avocadoChart"></canvas></div>
+        </div>
+        <div class="product-detail" id="maize-detail">
+          <h4>Maize Market Details</h4>
+          <p><strong>Current Price:</strong> KES 3,500/bag</p>
+          <div class="price-graph"><canvas id="maizeChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="analytics-card" id="low-moving-products">
+        <h3>Lowest Moving Products</h3>
+        <p class="click-hint">Click on products to view details</p>
+        <ul class="product-list">
+          <li data-product="onions">Onions <span>KES 60/kg</span></li>
+          <li data-product="potatoes">Potatoes <span>KES 50/kg</span></li>
+          <li data-product="cabbage">Cabbage <span>KES 40/kg</span></li>
+          <li data-product="mangoes">Mangoes <span>KES 70/kg</span></li>
+        </ul>
+        <div class="product-detail" id="onions-detail"><h4>Onions</h4><div class="price-graph"><canvas id="onionsChart"></canvas></div></div>
+      </div>
+
+      <div class="analytics-card">
+        <h3>Commodity Price Trends</h3>
+        <p>Last 30 Days</p>
+        <div class="filters">
+          <button class="filter-btn active" data-group="grains">Grains</button>
+          <button class="filter-btn" data-group="vegetables">Vegetables</button>
+          <button class="filter-btn" data-group="fruits">Fruits</button>
+          <button class="filter-btn" data-group="animal">Animal</button>
+        </div>
+        <div class="chart-container"><canvas id="commodityTrendsChart"></canvas></div>
+      </div>
+    `;
+  }
+
+  // Product detail toggles
+  document.querySelectorAll('.product-list li').forEach(li=>{
+    li.addEventListener('click', function(){
+      const product = this.getAttribute('data-product');
+      const card = this.closest('.analytics-card');
+      card.querySelectorAll('.product-detail').forEach(d=>d.classList.remove('active'));
+      const target = card.querySelector(`#${product}-detail`);
+      if(target) target.classList.add('active');
+    });
+  });
+
+  // Simple Chart: Commodity trends (sample data)
+  try{
+    const ctx = document.getElementById('commodityTrendsChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels:['Week 1','Week 2','Week 3','Week 4'],
+        datasets:[
+          {label:'Maize (KES/bag)',data:[3200,3350,3450,3500],tension:0.3,borderColor:'#2E7D32',fill:true,backgroundColor:'rgba(46,125,50,0.08)'},
+          {label:'Avocado (KES/kg)',data:[700,750,780,800],tension:0.3,borderColor:'#4CAF50',fill:true,backgroundColor:'rgba(76,175,80,0.08)'}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false}
+    });
+
+    // mini charts for product details (if canvases exist)
+    function mini(id,data){
+      const el = document.getElementById(id);
+      if(!el) return;
+      new Chart(el.getContext('2d'),{type:'line',data:{labels:['W1','W2','W3','W4'],datasets:[{data,data,tension:0.3,borderColor:'#2196F3',fill:true,backgroundColor:'rgba(33,150,243,0.08)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
+    }
+    mini('avocadoChart',[700,750,780,800]);
+    mini('maizeChart',[3200,3350,3450,3500]);
+    mini('onionsChart',[80,75,65,60]);
+  }catch(e){
+    console.warn('Chart init error', e);
+  }
+
+  // Alerts container
+  const alerts = [
+    {title:'Maize Supply Shortage',msg:'Western Kenya reporting 20% lower yields this season.'},
+    {title:'Avocado Export Opportunity',msg:'European markets offering premium prices for certified organic Hass avocados.'},
+    {title:'Irrigation Advisory',msg:'Central and Eastern regions should implement water conservation measures.'}
+  ];
+  const alertsRoot = document.getElementById('alerts-container');
+  if(alertsRoot){
+    alerts.forEach(a=>{
+      const d = document.createElement('div');
+      d.className = 'recommendation';
+      d.innerHTML = `<div class="recommendation-icon"><i class="fas fa-info-circle"></i></div><div class="recommendation-content"><h3>${a.title}</h3><p>${a.msg}</p></div>`;
+      alertsRoot.appendChild(d);
+    });
+  }
+});

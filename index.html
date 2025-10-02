@@ -1,0 +1,96 @@
+<!-- index.html - Login / Register homepage -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>shambaXchange</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/responsive.css">
+</head>
+<body>
+  <body style="background: linear-gradient(135deg, #a9f0ab 0%, #50af56 25%, #137616 50%, #074c0a 75%, #011c02 100%); min-height: 100vh; margin: 0;">
+  <main class="container" style="padding:40px 20px;">
+    <div style="max-width:800px;height:100%;margin:0 auto;background:rgb(255, 255, 255);padding:30px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+      <h1 style="color:var(--primary);margin-bottom:10px;">Welcome to shambaXchange</h1>
+      <p style="color:var(--text-light);margin-bottom:20px;">Sign in or register to access farmer and trader tools.</p>
+
+       <div class="container" id="loginContainer">
+        <h2>Login to Your Account</h2>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+        
+        <button class="submit-btn" id="loginBtn">Login</button>
+        
+        <div class="switch-form">
+            Don't have an account? <a id="showRegister">Register here</a>
+        </div>
+    </div>
+    
+    <div class="container" id="registerContainer" style="display: none;">
+        <h2>Create an Account</h2>
+        
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" placeholder="Enter your full name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="text" id="email" placeholder="Enter your email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="newUsername">Username</label>
+            <input type="text" id="newUsername" placeholder="Choose a username" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="newPassword">Password</label>
+            <input type="password" id="newPassword" placeholder="Create a strong password" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Select Role</label>
+            <div class="role-selection">
+                <div class="role-option" data-role="farmer">
+                    <div class="role-icon">👨‍🌾</div>
+                    <div>Farmer</div>
+                </div>
+                <div class="role-option" data-role="trader">
+                    <div class="role-icon">👨‍💼</div>
+                    <div>Trader</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="password-requirements">
+            <strong>Password Requirements:</strong>
+            <ul>
+                <li>Must be at least 8 characters long</li>
+                <li>Must contain both letters and numbers</li>
+                <li>Should include at least one special character</li>
+            </ul>
+        </div>
+        
+        <button class="submit-btn" id="registerBtn">Register</button>
+        
+        <div class="switch-form">
+            Already have an account? <a id="showLogin">Login here</a>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">Registration successful!</div>
+
+  </main>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

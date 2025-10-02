@@ -1,0 +1,77 @@
+<!-- views/marketplace.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Marketplace - ShambaXchange</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="../styles/marketplace.css">
+  <link rel="stylesheet" href="../styles/responsive.css">
+  <script src="../js/header-loader.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" defer></script>
+</head>
+<body>
+
+   <div id="header-container"></div>
+
+      <!-- Buy / Sell buttons -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button class="btn btn-primary" id="buy-btn">Buy Products/Services</button>
+        <button class="btn" id="sell-btn">Sell Product</button>
+      </div>
+
+      <!-- Buy Section (visible by default) -->
+      <div id="buy-section" class="card">
+        <div class="card-header">
+          <h2>Available Products & Services</h2>
+          <a href="#" id="view-all-listings" style="font-size:0.9rem;color:var(--text-light)">View All</a>
+        </div>
+        <div id="buy-lists-horizontal" class="horizontal-scroll"></div>
+      </div>
+
+      <!-- View All modal/grid -->
+      <div id="all-listings-modal" style="display:none;position:fixed;inset:0;z-index:2000;padding:40px;overflow:auto;background:rgba(0,0,0,0.4)">
+        <div style="background:white;padding:20px;border-radius:12px;max-width:1100px;margin:0 auto;">
+          <h3>All Listings</h3>
+          <div id="all-listings-grid" class="product-grid"></div>
+          <div style="text-align:right;margin-top:12px;"><button id="close-all-listings" class="btn">Close</button></div>
+        </div>
+      </div>
+
+      <!-- Sell Section (hidden by default) -->
+      <div id="sell-section" class="card" style="display:none;">
+        <div class="card-header"><h2>Sell Product</h2></div>
+        <form id="sell-form">
+          <label>Category <select name="category" required>
+            <option value="Produce">Produce</option>
+            <option value="Inputs">Inputs</option>
+            <option value="Services">Services</option>
+            <option value="Machinery">Machinery</option>
+          </select></label>
+          <label>Item <input type="text" name="item" required /></label>
+          <label>Quantity <input type="number" name="quantity" required /></label>
+          <label>Units <select name="units" required>
+            <option value="kgs">kgs</option>
+            <option value="bags">bags</option>
+            <option value="litres">litres</option>
+            <option value="tonnes">tonnes</option>
+            <option value="units">units</option>
+          </select></label>
+          <label>Location <input type="text" name="location" required /></label>
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn btn-primary" type="submit">Add Listing</button>
+            <button type="button" id="cancel-sell" class="btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-root"></div>
+
+  <script type="module" src="../js/app.js"></script>
+  <script type="module" src="../js/marketplace.js"></script>
+</body>
+</html>

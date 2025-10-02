@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Social - ShambaXchange</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/social.css">
+    <script src="../js/header-loader.js"></script>
+    <script src="../js/auth.js"></script>
+
+
+  </head>
+<body>
+ <div id="header-container"></div>
+
+<main class="social-container" style='display:flex;gap:1rem;align-items:flex-start;'>
+  <div class="left-column" style="flex:1;">
+    <section class="feed">
+      <div class="create-post card">
+        <h3>Create a post</h3>
+        <form id="post-form">
+          <textarea id="post-text" placeholder="Share news from your shamba..." rows="3"></textarea>
+          <div class="media-row">
+            <input type="file" id="post-media" accept="image/*,video/*">
+            <button type="submit" class="btn">Post</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="posts-feed">
+        <!-- posts rendered here -->
+      </div>
+    </section>
+  </div>
+  
+  <aside class="right-column" style="flex:0 0 30%;">
+    <section class="media-placeholder card" style="margin-bottom:1rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:700;">Media (Admin upload)</div>
+        <div style="background:#ffecb3;color:#f57c00;padding:4px 8px;border-radius:16px;font-size:0.85rem;">Sponsored</div>
+      </div>
+      <div style="margin-top:0.8rem;border:2px dashed #e9ecef;height:200px;display:flex;align-items:center;justify-content:center;color:#6c757d;">
+        Media placeholder — admins can add content from backend
+      </div>
+    </section>
+    
+    <section class="trending card" style="margin-bottom:1rem;">
+      <h3>Trending Posts</h3>
+      <div id="trending-list">
+        <!-- trending posts populated by JS -->
+      </div>
+    </section>
+  </aside>
+</main>
+
+    <script src="../js/social.js"></script>
+    <script src="../js/app.js"></script>
+</body>
+</html>

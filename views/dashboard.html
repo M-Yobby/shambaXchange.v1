@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard - shambaXchange</title>
+<link rel="stylesheet" href="/styles/main.css">
+<link rel="stylesheet" href="/styles/dashboard.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="../js/header-loader.js"></script>
+<script src="../js/auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="header-container"></div>
+
+<!-- Overlay for modals -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Weather Bar -->
+    <div class="weather-bar">
+        <div class="weather-info">
+            <div class="weather-temp">26°C</div>
+            <div class="weather-details">
+                <div>Nairobi, Kenya</div>
+                <div>Partly Cloudy</div>
+            </div>
+        </div>
+        <div class="weather-link">
+            <a href="https://weather.com" target="_blank">
+                <i class="fas fa-external-link-alt"></i> See full weather forecast
+            </a>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-chart-line"></i> Farm Dashboard</h1>
+            <div class="date-display" id="currentDate"></div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                <div class="quick-actions">
+                    <button class="btn btn-primary" id="addSaleBtn">
+                        <i class="fas fa-plus"></i> Add Sale
+                    </button>
+                    <button class="btn btn-primary" id="addCostBtn">
+                        <i class="fas fa-plus"></i> Add Cost
+                    </button>
+                    <button class="btn btn-info" id="askQuestionBtn">
+                        <i class="fas fa-robot"></i> Ask Question
+                    </button>
+                    <button class="btn btn-outline" id="learningHubBtn">
+                        <i class="fas fa-graduation-cap"></i> Learning Hub
+                    </button>
+                </div>
+                <!-- Moved Market Prices button here -->
+                <div style="margin-top: 0.8rem;">
+                    <button class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-chart-bar"></i> Market Prices
+                    </button>
+                </div>
+                <!-- New Yield Calculator button -->
+                <div style="margin-top: 0.8rem;">
+                    <button class="btn btn-warning" id="yieldCalculatorBtn" style="width: 100%;">
+                        <i class="fas fa-calculator"></i> Yield Calculator
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="card">
+                <h3><i class="fas fa-robot"></i> AI Recommendations</h3>
+                <ul class="recommendation-list" id="aiRecommendationsList">
+                    <li><i class="fas fa-lightbulb"></i> Consider planting drought-resistant crops next season</li>
+                    <li><i class="fas fa-lightbulb"></i> Current market prices favor maize over wheat</li>
+                </ul>
+            </div>
+
+            <!-- Crop Progress -->
+            <div class="card">
+                <h3><i class="fas fa-seedling"></i> Crop Progress</h3>
+                <div class="progress-container">
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Maize (Field A)</span>
+                            <span>65%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%; background-color: #4caf50;"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Beans (Field B)</span>
+                            <span>40%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 40%; background-color: #ff9800;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Sales History Card -->
+            <div class="card">
+                <h3><i class="fas fa-receipt"></i> Sales History</h3>
+                <ul class="data-list" id="salesList">
+                    <!-- Sales will be populated here -->
+                </ul>
+                <div class="total-display" id="totalSales">Total Sales: KES 0</div>
+            </div>
+
+            <!-- Input Costs Card -->
+            <div class="card">
+                <h3><i class="fas fa-money-bill-wave"></i> Input Costs</h3>
+                
+                <div class="filter-controls">
+                    <input type="date" id="filterStart" class="form-control" placeholder="Start Date">
+                    <input type="date" id="filterEnd" class="form-control" placeholder="End Date">
+                    <button class="btn btn-outline" id="filterCosts">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+                
+                <ul class="data-list" id="costsList">
+                    <!-- Costs will be populated here -->
+                </ul>
+                <div class="total-display" id="totalCosts">Total Costs: KES 0</div>
+            </div>
+
+            <!-- Financial Summary Card -->
+            <div class="card">
+                <h3><i class="fas fa-chart-pie"></i> Financial Summary</h3>
+                
+                <div class="finance-summary">
+                    <div class="summary-card summary-sales">
+                        <h4>Total Sales</h4>
+                        <p id="sumSales">KES 0</p>
+                    </div>
+                    <div class="summary-card summary-costs">
+                        <h4>Total Costs</h4>
+                        <p id="sumCosts">KES 0</p>
+                    </div>
+                    <div class="summary-card summary-net">
+                        <h4>Net Income</h4>
+                        <p id="sumNet">KES 0</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="financeChart"></canvas>
+                </div>
+                
+                <button class="btn btn-secondary" id="exportCSV" style="margin-top: 1rem; width: 100%;">
+                    <i class="fas fa-download"></i> Export Financial Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Sale Modal -->
+    <div id="saleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cart-plus"></i> Add Sale</h3>
+                <span class="close" id="closeSaleModal">&times;</span>
+            </div>
+            <form id="saleForm">
+                <div class="form-group">
+                    <label for="saleProduct">Product</label>
+                    <input type="text" id="saleProduct" class="form-control" placeholder="Product name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saleQty">Quantity</label>
+                    <input type="number" id="saleQty" class="form-control" placeholder="Quantity" min="0" step="0.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="salePrice">Price per Unit (KES)</label>
+                    <input type="number" id="salePrice" class="form-control" placeholder="Price per unit" min="0" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saleWholesale">Wholesale Price (KES, optional)</label>
+                    <input type="number" id="saleWholesale" class="form-control" placeholder="Wholesale price" min="0" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label for="saleType">Pricing Type</label>
+                    <select id="saleType" class="form-control">
+                        <option value="fixed">Fixed Price</option>
+                        <option value="negotiable">Negotiable</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saleDate">Date</label>
+                    <input type="date" id="saleDate" class="form-control" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-save"></i> Save Sale
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Input Cost Modal -->
+    <div id="costModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-money-bill"></i> Add Input Cost</h3>
+                <span class="close" id="closeCostModal">&times;</span>
+            </div>
+            <form id="modalCostForm">
+                <div class="form-group">
+                    <label for="modalCostItem">Item</label>
+                    <input type="text" id="modalCostItem" class="form-control" placeholder="Item name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modalCostCategory">Category</label>
+                    <select id="modalCostCategory" class="form-control" required>
+                        <option value="">Select Category</option>
+                        <option value="Seeds">Seeds</option>
+                        <option value="Fertilizer">Fertilizer</option>
+                        <option value="Labor">Labor</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modalCostAmount">Amount (KES)</label>
+                    <input type="number" id="modalCostAmount" class="form-control" placeholder="Amount" min="0" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modalCostDate">Date</label>
+                    <input type="date" id="modalCostDate" class="form-control" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-save"></i> Save Cost
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Yield Calculator Modal -->
+    <div id="yieldModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calculator"></i> Yield Calculator</h3>
+                <span class="close" id="closeYieldModal">&times;</span>
+            </div>
+            <form id="yieldForm">
+                <div class="form-group">
+                    <label for="cropType">Crop Type</label>
+                    <select id="cropType" class="form-control" required>
+                        <option value="">Select Crop</option>
+                        <option value="maize">Maize</option>
+                        <option value="wheat">Wheat</option>
+                        <option value="beans">Beans</option>
+                        <option value="rice">Rice</option>
+                        <option value="potato">Potatoes</option>
+                        <option value="coffee">Coffee</option>
+                        <option value="tea">Tea</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fieldArea">Field Area (acres)</label>
+                    <input type="number" id="fieldArea" class="form-control" placeholder="Area in acres" min="0" step="0.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="plantDensity">Plant Density (plants per acre)</label>
+                    <input type="number" id="plantDensity" class="form-control" placeholder="e.g., 25000 for maize" min="0" step="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="expectedYield">Expected Yield per Plant (kg)</label>
+                    <input type="number" id="expectedYield" class="form-control" placeholder="e.g., 0.2 for maize" min="0" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lossFactor">Expected Loss Factor (%)</label>
+                    <input type="number" id="lossFactor" class="form-control" placeholder="e.g., 10 for 10% loss" min="0" max="100" value="10">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-calculator"></i> Calculate Yield
+                </button>
+            </form>
+            
+            <div class="yield-result" id="yieldResult">
+                <h4>Estimated Yield</h4>
+                <div class="yield-value" id="yieldValue">0 kg</div>
+                <p id="yieldDetails">Based on your inputs</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chatbox -->
+    <div id="aiChatbox">
+        <div class="chatbox-header">
+            <h3>AI Assistant</h3>
+            <span class="close" id="closeChatbox">&times;</span>
+        </div>
+        <div class="chatbox-messages" id="chatMessages">
+            <div class="message ai">
+                Hello! I'm your farming assistant. How can I help you today?
+            </div>
+        </div>
+        <div class="chatbox-input">
+            <input type="text" id="userInput" placeholder="Ask a question about farming...">
+            <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+<!-- Learning Hub Sidebar -->
+<div id="learningHub">
+    <div class="hub-header">
+        <h2><i class="fas fa-graduation-cap"></i> Learning Hub</h2>
+        <span class="close" id="closeLearningHub">&times;</span>
+    </div>
+    <div class="hub-content">
+        <!-- Carousel Navigation -->
+        <div class="carousel-nav">
+            <button class="carousel-prev" id="hubPrev">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="carousel-indicators" id="hubIndicators"></div>
+            <button class="carousel-next" id="hubNext">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        
+        <!-- Carousel Container -->
+        <div class="carousel-container" id="hubCarousel">
+            <!-- Slide 1: Pestanol -->
+            <div class="hub-slide active">
+                <div class="slide-header">
+                    <h3>Pestanol - Organic Pest Control</h3>
+                    <span class="badge badge-sponsored">Sponsored</span>
+                </div>
+                <div class="slide-media">
+                    <img src="/assets/images/Pestanol/1.PNG" alt="Pestanol Product" class="slide-image">
+                    <div class="slide-thumbnails">
+                        <img src="/assets/images/Pestanol/1.PNG" alt="Pestanol Image 1" class="thumb active">
+                        <img src="/assets/images/Pestanol/2.PNG" alt="Pestanol Image 2" class="thumb">
+                        <img src="/assets/images/Pestanol/3.PNG" alt="Pestanol Image 3" class="thumb">
+                        <img src="/assets/images/Pestanol/4.PNG" alt="Pestanol Image 4" class="thumb">
+                        <img src="/assets/images/Pestanol/5.PNG" alt="Pestanol Image 5" class="thumb">
+                    </div>
+                </div>
+                <div class="slide-content">
+                    <p>Revolutionary organic pest control solution that protects your crops without harmful chemicals.</p>
+                    <ul class="slide-features">
+                        <li><i class="fas fa-check"></i> 100% Organic & Eco-friendly</li>
+                        <li><i class="fas fa-check"></i> Increases yield by up to 30%</li>
+                        <li><i class="fas fa-check"></i> Safe for beneficial insects</li>
+                    </ul>
+                    <button class="btn btn-primary slide-cta">
+                        <i class="fas fa-info-circle"></i> Learn More
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slide 2: Irrigation -->
+            <div class="hub-slide">
+                <div class="slide-header">
+                    <h3>Smart Irrigation Systems</h3>
+                    <span class="badge badge-sponsored">Sponsored</span>
+                </div>
+                <div class="slide-media">
+                    <div class="video-placeholder">
+                        <i class="fas fa-play-circle"></i>
+                        <p>Video: Water Optimization Techniques</p>
+                    </div>
+                </div>
+                <div class="slide-content">
+                    <p>Learn how modern irrigation systems can save up to 40% water while increasing crop yield.</p>
+                    <div class="slide-stats">
+                        <div class="stat">
+                            <span class="stat-value">40%</span>
+                            <span class="stat-label">Water Saved</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">25%</span>
+                            <span class="stat-label">Yield Increase</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline slide-cta">
+                        <i class="fas fa-book"></i> Read Guide
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slide 3: Crop Rotation -->
+            <div class="hub-slide">
+                <div class="slide-header">
+                    <h3>Crop Rotation Guide</h3>
+                </div>
+                <div class="slide-media">
+                    <div class="info-graphic">
+                        <i class="fas fa-seedling"></i>
+                        <p>Interactive Planning Tool</p>
+                    </div>
+                </div>
+                <div class="slide-content">
+                    <p>Maximize your yield and maintain soil health with proper crop rotation techniques.</p>
+                    <div class="rotation-tips">
+                        <span class="tip-tag">Legumes → Grains</span>
+                        <span class="tip-tag">Roots → Leafy Greens</span>
+                        <span class="tip-tag">3-Year Cycle</span>
+                    </div>
+                    <button class="btn btn-outline slide-cta">
+                        <i class="fas fa-download"></i> Download Planner
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+        // =======================
+        // DASHBOARD.JS
+        // =======================
+
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+
+        // Set default dates in filter inputs to current month
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+        
+        document.getElementById('filterStart').value = firstDay;
+        document.getElementById('filterEnd').value = lastDay;
+        
+        // Set default date in modals to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('saleDate').value = today;
+        document.getElementById('modalCostDate').value = today;
+
+        // ---------- Global Storage ----------
+        let sales = JSON.parse(localStorage.getItem('sales')) || [];
+        let costs = JSON.parse(localStorage.getItem('costs')) || [];
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSalesList();
+            updateCostsList(costs);
+            updateFinancialSummary();
+        });
+
+        // ---------- Quick Actions ----------
+        document.getElementById("addSaleBtn").addEventListener("click", () => {
+            document.getElementById("saleModal").style.display = "flex";
+            document.getElementById("overlay").style.display = "block";
+        });
+        
+        document.getElementById("addCostBtn").addEventListener("click", () => {
+            document.getElementById("costModal").style.display = "flex";
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        // Yield Calculator
+        document.getElementById("yieldCalculatorBtn").addEventListener("click", () => {
+            document.getElementById("yieldModal").style.display = "flex";
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        document.getElementById("closeYieldModal").addEventListener("click", () => {
+            document.getElementById("yieldModal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // AI Chatbox
+        document.getElementById("askQuestionBtn").addEventListener("click", () => {
+            document.getElementById("aiChatbox").style.display = "flex";
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        document.getElementById("closeChatbox").addEventListener("click", () => {
+            document.getElementById("aiChatbox").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // Learning Hub
+        document.getElementById("learningHubBtn").addEventListener("click", () => {
+            document.getElementById("learningHub").classList.add("open");
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        document.getElementById("closeLearningHub").addEventListener("click", () => {
+            document.getElementById("learningHub").classList.remove("open");
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // Close modals
+        document.getElementById("closeSaleModal").addEventListener("click", () => {
+            document.getElementById("saleModal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        });
+        
+        document.getElementById("closeCostModal").addEventListener("click", () => {
+            document.getElementById("costModal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal') || event.target.id === 'overlay') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+                document.getElementById('aiChatbox').style.display = 'none';
+                document.getElementById('learningHub').classList.remove('open');
+                document.getElementById('overlay').style.display = 'none';
+            }
+        });
+
+        // Yield Calculator Form Submission
+        document.getElementById("yieldForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const cropType = document.getElementById("cropType").value;
+            const fieldArea = parseFloat(document.getElementById("fieldArea").value);
+            const plantDensity = parseFloat(document.getElementById("plantDensity").value) || getDefaultDensity(cropType);
+            const expectedYield = parseFloat(document.getElementById("expectedYield").value) || getDefaultYield(cropType);
+            const lossFactor = parseFloat(document.getElementById("lossFactor").value) || 10;
+            
+            // Calculate estimated yield
+            const totalPlants = fieldArea * plantDensity;
+            const grossYield = totalPlants * expectedYield;
+            const netYield = grossYield * (1 - (lossFactor / 100));
+            
+            // Display result
+            document.getElementById("yieldValue").textContent = `${netYield.toLocaleString()} kg`;
+            document.getElementById("yieldDetails").textContent = `Estimated yield for ${fieldArea} acres of ${cropType} with ${lossFactor}% loss factor`;
+            document.getElementById("yieldResult").style.display = "block";
+            
+            // Show success notification
+            showNotification('Yield calculated successfully!', 'success');
+        });
+
+        // Default plant densities per acre for common crops
+        function getDefaultDensity(cropType) {
+            const densities = {
+                'maize': 25000,
+                'wheat': 1200000,
+                'beans': 100000,
+                'rice': 800000,
+                'potato': 15000,
+                'coffee': 1000,
+                'tea': 5000,
+                'other': 10000
+            };
+            return densities[cropType] || 10000;
+        }
+
+        // Default yield per plant for common crops (in kg)
+        function getDefaultYield(cropType) {
+            const yields = {
+                'maize': 0.2,
+                'wheat': 0.0015,
+                'beans': 0.02,
+                'rice': 0.002,
+                'potato': 0.5,
+                'coffee': 2,
+                'tea': 0.1,
+                'other': 0.1
+            };
+            return yields[cropType] || 0.1;
+        }
+
+        // AI Chat functionality
+        document.getElementById("sendMessage").addEventListener("click", function() {
+            const userInput = document.getElementById("userInput");
+            const message = userInput.value.trim();
+            
+            if (message) {
+                // Add user message
+                addMessage(message, 'user');
+                
+                // Simulate AI response after a short delay
+                setTimeout(() => {
+                    const responses = [
+                        "Based on your farm data, I recommend checking soil moisture levels before irrigation.",
+                        "That's a great question! For that crop, the optimal planting season is just beginning.",
+                        "I suggest consulting with our crop specialists for detailed advice on that matter.",
+                        "Based on current market trends, that crop is showing good profitability this season.",
+                        "You might want to consider crop rotation to maintain soil health and productivity."
+                    ];
+                    
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, 'ai');
+                }, 1000);
+                
+                userInput.value = '';
+            }
+        });
+
+        // Allow pressing Enter to send message
+        document.getElementById("userInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                document.getElementById("sendMessage").click();
+            }
+        });
+
+        function addMessage(text, type) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", type);
+            messageDiv.textContent = text;
+            
+            document.getElementById("chatMessages").appendChild(messageDiv);
+            document.getElementById("chatMessages").scrollTop = document.getElementById("chatMessages").scrollHeight;
+        }
+
+        // ---------- Sales ----------
+        document.getElementById("saleForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const product = document.getElementById("saleProduct").value;
+            const qty = parseFloat(document.getElementById("saleQty").value);
+            const price = parseFloat(document.getElementById("salePrice").value);
+            const wholesale = parseFloat(document.getElementById("saleWholesale").value) || 0;
+            const type = document.getElementById("saleType").value;
+            const date = document.getElementById("saleDate").value;
+
+            const total = qty * price;
+
+            const sale = { 
+                product, 
+                qty, 
+                price, 
+                wholesale, 
+                type, 
+                total, 
+                date: date || new Date().toISOString().split("T")[0] 
+            };
+            
+            sales.push(sale);
+            localStorage.setItem('sales', JSON.stringify(sales));
+
+            updateSalesList();
+            updateFinancialSummary();
+
+            this.reset();
+            document.getElementById("saleDate").value = today;
+            document.getElementById("saleModal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            
+            // Show success notification
+            showNotification('Sale added successfully!', 'success');
+        });
+
+        function updateSalesList() {
+            const list = document.getElementById("salesList");
+            list.innerHTML = "";
+            let totalSales = 0;
+            
+            if (sales.length === 0) {
+                list.innerHTML = '<li class="no-data">No sales recorded yet</li>';
+                document.getElementById("totalSales").textContent = `Total Sales: KES 0`;
+                return;
+            }
+            
+            // Sort sales by date (newest first)
+            sales.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sales.forEach(s => {
+                const li = document.createElement("li");
+                
+                const dateObj = new Date(s.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                li.innerHTML = `
+                    <div>
+                        <div>${s.product}</div>
+                        <small>${formattedDate} • ${s.qty} units</small>
+                    </div>
+                    <div>
+                        <strong>KES ${s.total.toLocaleString()}</strong>
+                        <div class="badge ${s.type === 'fixed' ? 'badge-success' : 'badge-warning'}">${s.type}</div>
+                    </div>
+                `;
+                
+                list.appendChild(li);
+                totalSales += s.total;
+            });
+            
+            document.getElementById("totalSales").textContent = `Total Sales: KES ${totalSales.toLocaleString()}`;
+        }
+
+        // ---------- Input Costs ----------
+        document.getElementById("modalCostForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const item = document.getElementById("modalCostItem").value;
+            const category = document.getElementById("modalCostCategory").value;
+            const amount = parseFloat(document.getElementById("modalCostAmount").value);
+            const date = document.getElementById("modalCostDate").value;
+
+            const cost = { item, category, amount, date };
+            costs.push(cost);
+            localStorage.setItem('costs', JSON.stringify(costs));
+
+            updateCostsList(costs);
+            updateFinancialSummary();
+
+            this.reset();
+            document.getElementById("modalCostDate").value = today;
+            document.getElementById("costModal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            
+            // Show success notification
+            showNotification('Cost added successfully!', 'success');
+        });
+
+        // Filter costs
+        document.getElementById("filterCosts").addEventListener("click", () => {
+            const start = document.getElementById("filterStart").value;
+            const end = document.getElementById("filterEnd").value;
+
+            let filtered = costs;
+            if (start) filtered = filtered.filter(c => c.date >= start);
+            if (end) filtered = filtered.filter(c => c.date <= end);
+
+            updateCostsList(filtered);
+        });
+
+        function updateCostsList(costArray) {
+            const list = document.getElementById("costsList");
+            list.innerHTML = "";
+            let totalCosts = 0;
+            
+            if (costArray.length === 0) {
+                list.innerHTML = '<li class="no-data">No costs recorded yet</li>';
+                document.getElementById("totalCosts").textContent = `Total Costs: KES 0`;
+                return;
+            }
+            
+            // Sort costs by date (newest first)
+            costArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            costArray.forEach(c => {
+                const li = document.createElement("li");
+                
+                const dateObj = new Date(c.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                li.innerHTML = `
+                    <div>
+                        <div>${c.item}</div>
+                        <small>${formattedDate} • ${c.category}</small>
+                    </div>
+                    <div>
+                        <strong>KES ${c.amount.toLocaleString()}</strong>
+                    </div>
+                `;
+                
+                list.appendChild(li);
+                totalCosts += c.amount;
+            });
+            
+            document.getElementById("totalCosts").textContent = `Total Costs: KES ${totalCosts.toLocaleString()}`;
+        }
+
+        // ---------- Financial Summary ----------
+        let financeChart;
+        function updateFinancialSummary() {
+            const totalSales = sales.reduce((sum, s) => sum + s.total, 0);
+            const totalCosts = costs.reduce((sum, c) => sum + c.amount, 0);
+            const net = totalSales - totalCosts;
+
+            document.getElementById("sumSales").textContent = `KES ${totalSales.toLocaleString()}`;
+            document.getElementById("sumCosts").textContent = `KES ${totalCosts.toLocaleString()}`;
+            document.getElementById("sumNet").textContent = `KES ${net.toLocaleString()}`;
+
+            const ctx = document.getElementById("financeChart").getContext("2d");
+
+            if (financeChart) financeChart.destroy();
+
+            // Create a more detailed chart
+            financeChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Sales", "Costs", "Net Income"],
+                    datasets: [{
+                        label: "KES",
+                        data: [totalSales, totalCosts, net],
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.7)',
+                            'rgba(244, 67, 54, 0.7)',
+                            'rgba(33, 150, 243, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 175, 80, 1)',
+                            'rgba(244, 67, 54, 1)',
+                            'rgba(33, 150, 243, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'KES ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'KES ' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---------- Export CSV ----------
+        document.getElementById("exportCSV").addEventListener("click", () => {
+            let csv = "Type,Date,Item,Category,Quantity,Price,Wholesale,Total/Amount\n";
+
+            sales.forEach(s => {
+                csv += `Sale,${s.date},${s.product},,${s.qty},${s.price},${s.wholesale || ''},${s.total}\n`;
+            });
+
+            costs.forEach(c => {
+                csv += `Cost,${c.date},${c.item},${c.category},,,,${c.amount}\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "financial_summary.csv";
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Show success notification
+            showNotification('Data exported successfully!', 'success');
+        });
+
+        // Helper function to show notifications
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 6px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: fadeIn 0.3s ease-out;
+            `;
+            
+            notification.style.backgroundColor = type === 'success' ? '#4caf50' : '#f44336';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Add fadeOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+            
+            .progress-bar {
+                height: 8px;
+                background-color: #e9ecef;
+                border-radius: 4px;
+                overflow: hidden;
+                margin-top: 0.3rem;
+            }
+            
+            .progress-fill {
+                height: 100%;
+                border-radius: 4px;
+                transition: width 0.5s ease;
+            }
+            
+            .progress-item {
+                margin-bottom: 1rem;
+            }
+            
+            .progress-header {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.9rem;
+            }
+            
+            .no-data {
+                text-align: center;
+                color: #6c757d;
+                font-style: italic;
+                padding: 2rem 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+<!-- views/partials/footer.html -->
+<footer>
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>ShambaXchange</h3>
+        <p>Connecting Kenyan Farmers to Markets through AI-Powered Insights</p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">How It Works</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Learning Center</a></li>
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Connect With Us</h3>
+        <ul>
+          <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+          <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+          <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+          <li><a href="#"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>&copy; 2025 ShambaXchange. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/dashboard.js"></script>
+<script src="/js/dashboard_injected.js"></script>
+</body>
+</html>

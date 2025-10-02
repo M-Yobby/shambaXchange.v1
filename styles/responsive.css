@@ -1,0 +1,11 @@
+/* styles/responsive.css - media queries */
+@media (max-width:768px){
+  nav ul{display:none;}
+  .bottom-nav{display:block;position:fixed;bottom:0;left:0;right:0;background:white;padding:10px 0;box-shadow:0 -6px 12px rgba(0,0,0,0.08);z-index:100;}
+  .dashboard-grid{grid-template-columns:1fr;}
+  .quick-actions{grid-template-columns:repeat(2,1fr);}
+  .page-title{flex-direction:column;align-items:flex-start;gap:12px;}
+  .product-grid{grid-template-columns:1fr;}
+  .market-social{grid-template-columns:1fr;}
+  .learning-hub-sidebar{width:85%;}
+}

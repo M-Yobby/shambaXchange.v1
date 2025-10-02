@@ -1,0 +1,87 @@
+/* social.css - styles for Social page */
+
+.social-container {
+    display: flex;
+    gap: 20px;
+    padding: 24px;
+    align-items: flex-start;
+}
+
+.left-column {
+    flex: 1;
+}
+
+.right-column {
+    flex: 0 0 30%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.create-post textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.media-row {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:10px;
+}
+
+.feed .post {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.post .meta {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.post .meta img {
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.post .actions {
+    display:flex;
+    gap:12px;
+    margin-top:8px;
+}
+
+.btn {
+    background:#27ae60;
+    color:#fff;
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+}
+
+@media (max-width: 900px) {
+    .social-container {
+        flex-direction: column;
+    }
+    
+    .right-column {
+        flex: 1;
+        width: 100%;
+    }
+}

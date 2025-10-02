@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShambaXchange - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/login.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">
+                <i class="fas fa-seedling"></i>
+                <span>ShambaXchange</span>
+            </div>
+            <h1>Welcome to ShambaXchange</h1>
+            <p>Connecting Kenyan farmers to markets through AI-powered insights</p>
+        </div>
+
+        <div class="user-type-selector">
+            <div class="user-type active" data-user-type="farmer">
+                <i class="fas fa-user"></i>
+                <span>Farmer</span>
+                <p>Sell your produce and access market intelligence</p>
+            </div>
+            <div class="user-type" data-user-type="trader">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Trader</span>
+                <p>Buy and sell agricultural products</p>
+            </div>
+            <div class="user-type" data-user-type="buyer">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Buyer</span>
+                <p>Purchase agricultural products directly</p>
+            </div>
+        </div>
+
+        <div class="login-form-container">
+            <!-- Login Form -->
+            <form class="login-form active" id="login-form">
+                <h2>Login to Your Account</h2>
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="remember">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+                <p class="form-switch">
+                    Don't have an account? <a href="#" id="show-register">Register Now</a>
+                </p>
+            </form>
+
+            <!-- Registration Form -->
+            <form class="register-form" id="register-form">
+                <h2>Create Your Account</h2>
+                <div class="form-group">
+                    <label for="register-name">Full Name</label>
+                    <input type="text" id="register-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email Address</label>
+                    <input type="email" id="register-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">Phone Number</label>
+                    <input type="tel" id="register-phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-location">Location/County</label>
+                    <select id="register-location" name="location" required>
+                        <option value="">Select County</option>
+                        <option value="nairobi">Nairobi</option>
+                        <option value="mombasa">Mombasa</option>
+                        <option value="kisumu">Kisumu</option>
+                        <option value="nakuru">Nakuru</option>
+                        <option value="busia">Busia</option>
+                        <!-- Add all Kenyan counties -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" name="confirm_password" required>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="terms" required>
+                        <span class="checkmark"></span>
+                        I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                <p class="form-switch">
+                    Already have an account? <a href="#" id="show-login">Login Now</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
