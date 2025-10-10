@@ -69,15 +69,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 
-  // buttons
-  buyBtn.addEventListener('click', ()=>{ buySection.style.display='block'; sellSection.style.display='none'; });
-  sellBtn.addEventListener('click', ()=>{ sellSection.style.display='block'; buySection.style.display='none'; });
+  // buttons with toggle active state
+  buyBtn.addEventListener('click', ()=>{ 
+    buySection.style.display='block'; 
+    sellSection.style.display='none';
+    buyBtn.classList.add('active');
+    sellBtn.classList.remove('active');
+  });
+  sellBtn.addEventListener('click', ()=>{ 
+    sellSection.style.display='block'; 
+    buySection.style.display='none';
+    sellBtn.classList.add('active');
+    buyBtn.classList.remove('active');
+  });
 
   // view all link opens modal
   viewAllLink.addEventListener('click', (e)=>{ e.preventDefault(); renderAllGrid(); allModal.style.display='block'; });
   document.getElementById('close-all-listings').addEventListener('click', ()=> allModal.style.display='none');
 
-  cancelSell.addEventListener('click', ()=>{ sellSection.style.display='none'; buySection.style.display='block'; });
+  cancelSell.addEventListener('click', ()=>{ 
+    sellSection.style.display='none'; 
+    buySection.style.display='block';
+    buyBtn.classList.add('active');
+    sellBtn.classList.remove('active');
+  });
 
   // handle new listing form
   sellForm.addEventListener('submit', (e)=>{

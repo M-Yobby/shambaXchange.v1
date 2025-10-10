@@ -22,16 +22,24 @@
         <h1><i class="fas fa-shopping-cart"></i> Marketplace</h1>
       </div>
 
-      <!-- Buy / Sell buttons -->
-      <div style="display:flex;gap:10px;margin-bottom:20px;">
-        <button class="btn btn-primary" id="buy-btn">Buy Products/Services</button>
-        <button class="btn" id="sell-btn">Sell Product</button>
+      <!-- Buy / Sell Toggle Buttons -->
+      <div class="marketplace-toggle">
+        <button class="toggle-btn active" id="buy-btn">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Buy Products</span>
+          <small>Browse available products</small>
+        </button>
+        <button class="toggle-btn" id="sell-btn">
+          <i class="fas fa-tag"></i>
+          <span>Sell Product</span>
+          <small>List your products</small>
+        </button>
       </div>
 
       <!-- Buy Section (visible by default) -->
       <div id="buy-section" class="card">
         <div class="card-header">
-          <h2>Available Products & Services</h2>
+          <h2><i class="fas fa-store"></i> Available Products & Services</h2>
           <a href="#" id="view-all-listings" style="font-size:0.9rem;color:var(--text-light)">View All</a>
         </div>
         <div id="buy-lists-horizontal" class="horizontal-scroll"></div>
@@ -48,27 +56,86 @@
 
       <!-- Sell Section (hidden by default) -->
       <div id="sell-section" class="card" style="display:none;">
-        <div class="card-header"><h2>Sell Product</h2></div>
-        <form id="sell-form">
-          <label>Category <select name="category" required>
-            <option value="Produce">Produce</option>
-            <option value="Inputs">Inputs</option>
-            <option value="Services">Services</option>
-            <option value="Machinery">Machinery</option>
-          </select></label>
-          <label>Item <input type="text" name="item" required /></label>
-          <label>Quantity <input type="number" name="quantity" required /></label>
-          <label>Units <select name="units" required>
-            <option value="kgs">kgs</option>
-            <option value="bags">bags</option>
-            <option value="litres">litres</option>
-            <option value="tonnes">tonnes</option>
-            <option value="units">units</option>
-          </select></label>
-          <label>Location <input type="text" name="location" required /></label>
-          <div style="display:flex;gap:10px;margin-top:12px;">
-            <button class="btn btn-primary" type="submit">Add Listing</button>
-            <button type="button" id="cancel-sell" class="btn">Cancel</button>
+        <div class="card-header">
+          <h2><i class="fas fa-plus-circle"></i> List Your Product</h2>
+          <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">Fill in the details below to list your product on the marketplace</p>
+        </div>
+        <form id="sell-form" style="padding: 1.5rem;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sell-category"><i class="fas fa-list"></i> Category *</label>
+              <select name="category" id="sell-category" class="form-control" required>
+                <option value="">Select a category</option>
+                <option value="Produce">🌾 Produce</option>
+                <option value="Inputs">🧪 Inputs (Seeds, Fertilizer)</option>
+                <option value="Services">🔧 Services</option>
+                <option value="Machinery">🚜 Machinery & Equipment</option>
+                <option value="Livestock">🐄 Livestock</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="sell-item"><i class="fas fa-box"></i> Product Name *</label>
+              <input type="text" name="item" id="sell-item" class="form-control" placeholder="e.g., Fresh Maize" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sell-quantity"><i class="fas fa-weight"></i> Quantity *</label>
+              <input type="number" name="quantity" id="sell-quantity" class="form-control" placeholder="e.g., 100" min="0" step="0.01" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="sell-units"><i class="fas fa-balance-scale"></i> Units *</label>
+              <select name="units" id="sell-units" class="form-control" required>
+                <option value="">Select unit</option>
+                <option value="kgs">Kilograms (kg)</option>
+                <option value="bags">Bags</option>
+                <option value="litres">Litres</option>
+                <option value="tonnes">Tonnes</option>
+                <option value="units">Units/Pieces</option>
+                <option value="acres">Acres</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sell-price"><i class="fas fa-money-bill-wave"></i> Price per Unit (KES) *</label>
+              <input type="number" name="price" id="sell-price" class="form-control" placeholder="e.g., 50" min="0" step="0.01" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="sell-location"><i class="fas fa-map-marker-alt"></i> Location *</label>
+              <input type="text" name="location" id="sell-location" class="form-control" placeholder="e.g., Nairobi, Kenya" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sell-description"><i class="fas fa-align-left"></i> Description</label>
+            <textarea name="description" id="sell-description" class="form-control" rows="3" placeholder="Describe your product, quality, harvest date, etc."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sell-contact"><i class="fas fa-phone"></i> Contact Number *</label>
+              <input type="tel" name="contact" id="sell-contact" class="form-control" placeholder="e.g., +254 712 345 678" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="sell-min-order"><i class="fas fa-shopping-basket"></i> Minimum Order</label>
+              <input type="number" name="minOrder" id="sell-min-order" class="form-control" placeholder="e.g., 10" min="0" />
+            </div>
+          </div>
+
+          <div class="form-actions" style="display:flex;gap:10px;margin-top:1.5rem;">
+            <button class="btn btn-primary" type="submit" style="flex: 1;">
+              <i class="fas fa-check"></i> Publish Listing
+            </button>
+            <button type="button" id="cancel-sell" class="btn btn-outline" style="flex: 0 0 auto;">
+              <i class="fas fa-times"></i> Cancel
+            </button>
           </div>
         </form>
       </div>
