@@ -485,8 +485,8 @@ body {
 #learningHub {
     position: fixed;
     top: 0;
-    right: -50%;
-    width: 50%;
+    right: -85%;
+    width: 85%;
     height: 100vh;
     background: white;
     box-shadow: -5px 0 15px rgba(0,0,0,0.1);

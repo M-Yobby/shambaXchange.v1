@@ -86,15 +86,107 @@ document.getElementById("closeChatbox").addEventListener("click", () => {
 });
 
 // Learning Hub
-document.getElementById("learningHubBtn").addEventListener("click", () => {
+document.getElementById("learningHubBtn").addEventListener("click", async () => {
     document.getElementById("learningHub").classList.add("open");
     document.getElementById("overlay").style.display = "block";
+    await loadLearningHubContent();
 });
 
 document.getElementById("closeLearningHub").addEventListener("click", () => {
     document.getElementById("learningHub").classList.remove("open");
     document.getElementById("overlay").style.display = "none";
 });
+
+// Load Learning Hub Content from Sponsors
+let currentSlide = 0;
+let learningContent = [];
+
+async function loadLearningHubContent() {
+    try {
+        learningContent = await api.getLearningHubContent();
+        if (learningContent.length > 0) {
+            renderLearningHub();
+        }
+    } catch (error) {
+        console.error('Error loading learning hub content:', error);
+    }
+}
+
+function renderLearningHub() {
+    const carousel = document.getElementById('hubCarousel');
+    const indicators = document.getElementById('hubIndicators');
+    
+    carousel.innerHTML = '';
+    indicators.innerHTML = '';
+
+    learningContent.forEach((content, index) => {
+        // Create slide
+        const slide = document.createElement('div');
+        slide.className = `hub-slide${index === 0 ? ' active' : ''}`;
+        
+        const features = content.features ? JSON.parse(content.features) : [];
+        
+        slide.innerHTML = `
+            <div class="slide-header">
+                <h3>${content.title}</h3>
+                <span class="badge badge-sponsored">Sponsored</span>
+            </div>
+            <div class="slide-media">
+                ${content.mediaType === 'video' 
+                    ? `<video src="${content.mediaUrl}" controls class="slide-image"></video>`
+                    : `<img src="${content.mediaUrl}" alt="${content.title}" class="slide-image">`
+                }
+            </div>
+            <div class="slide-content">
+                <p>${content.description}</p>
+                ${features.length > 0 ? `
+                    <ul class="slide-features">
+                        ${features.map(f => `<li><i class="fas fa-check"></i> ${f}</li>`).join('')}
+                    </ul>
+                ` : ''}
+                ${content.learnMoreUrl ? `
+                    <a href="${content.learnMoreUrl}" target="_blank" class="btn btn-primary slide-cta">
+                        <i class="fas fa-info-circle"></i> Learn More
+                    </a>
+                ` : ''}
+            </div>
+        `;
+        carousel.appendChild(slide);
+
+        // Create indicator
+        const indicator = document.createElement('span');
+        indicator.className = `indicator${index === 0 ? ' active' : ''}`;
+        indicator.addEventListener('click', () => goToSlide(index));
+        indicators.appendChild(indicator);
+    });
+
+    // Navigation buttons
+    document.getElementById('hubPrev').addEventListener('click', prevSlide);
+    document.getElementById('hubNext').addEventListener('click', nextSlide);
+}
+
+function goToSlide(index) {
+    const slides = document.querySelectorAll('.hub-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    
+    slides[currentSlide].classList.remove('active');
+    indicators[currentSlide].classList.remove('active');
+    
+    currentSlide = index;
+    
+    slides[currentSlide].classList.add('active');
+    indicators[currentSlide].classList.add('active');
+}
+
+function nextSlide() {
+    const nextIndex = (currentSlide + 1) % learningContent.length;
+    goToSlide(nextIndex);
+}
+
+function prevSlide() {
+    const prevIndex = (currentSlide - 1 + learningContent.length) % learningContent.length;
+    goToSlide(prevIndex);
+}
 
 // Close modals
 document.getElementById("closeSaleModal").addEventListener("click", () => {
