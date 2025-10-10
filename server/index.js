@@ -242,6 +242,9 @@ app.post('/api/ai/chat', authenticate, requireRole('farmer'), async (req, res) =
   try {
     const { message } = req.body;
 
+    const systemPrompt = `You are AgriBot, an expert agricultural assistant for Kenyan farmers. Provide practical, actionable farming advice based on Kenyan context, climate, and crops. Keep responses concise and helpful.`;
+    const fullPrompt = `${systemPrompt}\n\nFarmer: ${message}\n\nAgriBot:`;
+
     const response = await fetch('https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct', {
       method: 'POST',
       headers: {
@@ -249,16 +252,37 @@ app.post('/api/ai/chat', authenticate, requireRole('farmer'), async (req, res) =
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: `You are a helpful agricultural assistant for farmers in Kenya. Provide practical farming advice. User question: ${message}`,
+        inputs: fullPrompt,
         parameters: {
-          max_new_tokens: 200,
-          temperature: 0.7,
+          max_new_tokens: 250,
+          temperature: 0.8,
+          top_p: 0.9,
+          do_sample: true,
+          return_full_text: false,
         }
       })
     });
 
     const data = await response.json();
-    const aiResponse = data[0]?.generated_text || 'I apologize, but I could not generate a response. Please try again.';
+    console.log('HuggingFace raw response:', data);
+    
+    let aiResponse = '';
+    if (data[0]?.generated_text) {
+      aiResponse = data[0].generated_text.trim();
+      
+      // Remove the prompt if it's still included
+      if (aiResponse.includes('AgriBot:')) {
+        aiResponse = aiResponse.split('AgriBot:').pop().trim();
+      }
+      if (aiResponse.includes('Farmer:')) {
+        aiResponse = aiResponse.split('Farmer:')[0].trim();
+      }
+    } else if (data.error) {
+      console.error('HuggingFace error:', data.error);
+      aiResponse = 'I apologize, the AI service is currently busy. Please try again in a moment.';
+    } else {
+      aiResponse = 'I apologize, but I could not generate a response. Please try again.';
+    }
 
     res.json({ response: aiResponse });
   } catch (error) {
