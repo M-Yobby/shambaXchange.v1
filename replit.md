@@ -15,7 +15,30 @@ The application is now a **full-stack web application** with PostgreSQL database
 
 ## Recent Changes (October 10, 2025)
 
-### Latest Updates (Evening - Part 3)
+### Latest Updates (Evening - Part 4)
+- **Marketplace Redesign**: Enhanced Buy/Sell toggle system with active state styling
+  - Toggle buttons show active state (green background) when selected
+  - Smooth transitions between Buy and Sell views
+  - Cancel button properly returns to Buy view with correct toggle state
+- **Social Page Icons**: Added comprehensive icon system throughout social page
+  - Create post: edit icon
+  - Add Photo/Video: image icon with styled upload button
+  - Post button: paper-plane icon
+  - Trending Posts: fire icon
+  - Media section: video and star icons
+- **Trending Posts by Engagement**: Trending section now displays most engaged posts
+  - Calculates engagement as likes + comments
+  - Shows top 5 posts sorted by engagement
+  - Displays user avatar, post excerpt, and engagement metrics
+  - Visual indicators for likes, comments, and total engagement
+- **Comment Viewing System**: Users can now view and add comments on posts
+  - Click "Comment" button to toggle comment section
+  - Displays all existing comments with user names
+  - Styled comment input box for adding new comments
+  - Comments update trending posts in real-time
+  - Empty state message when no comments exist
+
+### Earlier (Evening - Part 3)
 - **Crop Progress UI Complete**: Added "Add Crop" button and modal form to dashboard with full functionality
   - Farmers can now track crops with planting dates, harvest dates, and field locations
   - Progress bars automatically calculate based on time elapsed

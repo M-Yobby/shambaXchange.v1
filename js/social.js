@@ -114,6 +114,7 @@ function renderTrending(list) {
 
 function renderMostEngaged(list) {
     const node = document.getElementById('engaged-list');
+    if (!node) return; // Element doesn't exist anymore
     node.innerHTML = '';
     list.forEach(u => {
         const li = document.createElement('li');
