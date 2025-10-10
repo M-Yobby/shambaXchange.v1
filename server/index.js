@@ -7,7 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { db } from './db.js';
-import { users, sales, costs, listings, posts, comments, sponsorContent } from '../shared/schema.js';
+import { users, sales, costs, listings, posts, comments, sponsorContent, crops } from '../shared/schema.js';
 import { eq, desc, sql } from 'drizzle-orm';
 
 dotenv.config();
@@ -234,6 +234,38 @@ app.post('/api/costs', authenticate, requireRole('farmer'), async (req, res) => 
     res.json(newCost);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create cost' });
+  }
+});
+
+// ==================== CROPS ROUTES ====================
+
+app.get('/api/crops', authenticate, requireRole('farmer'), async (req, res) => {
+  try {
+    const userCrops = await db.select().from(crops)
+      .where(eq(crops.userId, req.user.id))
+      .orderBy(desc(crops.plantingDate));
+    res.json(userCrops);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch crops' });
+  }
+});
+
+app.post('/api/crops', authenticate, requireRole('farmer'), async (req, res) => {
+  try {
+    const { cropName, fieldLocation, plantingDate, expectedHarvestDate, notes } = req.body;
+
+    const [newCrop] = await db.insert(crops).values({
+      userId: req.user.id,
+      cropName,
+      fieldLocation,
+      plantingDate: new Date(plantingDate),
+      expectedHarvestDate: new Date(expectedHarvestDate),
+      notes,
+    }).returning();
+
+    res.json(newCrop);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create crop' });
   }
 });
 

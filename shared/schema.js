@@ -81,6 +81,18 @@ export const sponsorContent = pgTable("sponsor_content", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const crops = pgTable("crops", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  cropName: text("crop_name").notNull(),
+  fieldLocation: text("field_location").notNull(),
+  plantingDate: timestamp("planting_date").notNull(),
+  expectedHarvestDate: timestamp("expected_harvest_date").notNull(),
+  status: text("status").notNull().default('growing'), // 'growing', 'harvested', 'failed'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   sales: many(sales),
@@ -89,6 +101,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
   comments: many(comments),
   sponsorContent: many(sponsorContent),
+  crops: many(crops),
 }));
 
 export const salesRelations = relations(sales, ({ one }) => ({
@@ -134,6 +147,13 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 export const sponsorContentRelations = relations(sponsorContent, ({ one }) => ({
   sponsor: one(users, {
     fields: [sponsorContent.sponsorId],
+    references: [users.id],
+  }),
+}));
+
+export const cropsRelations = relations(crops, ({ one }) => ({
+  user: one(users, {
+    fields: [crops.userId],
     references: [users.id],
   }),
 }));

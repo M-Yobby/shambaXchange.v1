@@ -15,7 +15,13 @@ The application is now a **full-stack web application** with PostgreSQL database
 
 ## Recent Changes (October 10, 2025)
 
-### Latest Updates (Evening)
+### Latest Updates (Evening - Part 2)
+- **AI Chatbot Fixed**: Replaced hardcoded placeholder responses with real Hugging Face API integration
+- **Market Prices Link**: Dashboard "Market Prices" button now correctly links to Market Intel page
+- **Crop Tracking System**: Added database schema and API endpoints for tracking crops with planting/harvest dates
+- **Navigation Icons**: Working on making navigation headers consistent across all pages with icons
+
+### Earlier (Evening - Part 1)
 - **Database Driver Fix**: Switched from @neondatabase/serverless to standard postgres driver for better Drizzle ORM compatibility
 - **Registration Fixed**: Added email uniqueness validation and improved error handling for duplicate users
 - **Header Navigation Fixed**: Corrected ES6 module loading for auth-new.js across all pages
