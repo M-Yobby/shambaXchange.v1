@@ -14,15 +14,15 @@ ShambaXchange is a comprehensive web-based agricultural platform designed to con
 The application is now a **full-stack web application** with PostgreSQL database backend, Express API server, and dynamic frontend. It features secure JWT authentication, role-based access control, and real-time data integration. The system supports four user roles: farmers, traders, sponsors, and admins.
 
 ## Recent Changes (October 10, 2025)
-- **Backend Infrastructure**: Set up Express server (port 3000) with PostgreSQL database
+- **Backend Infrastructure**: Set up Express server with PostgreSQL database
 - **Database Schema**: Created comprehensive schema with Drizzle ORM for users, sales, costs, listings, posts, comments, and sponsor content
 - **Authentication**: Implemented JWT-based authentication with bcrypt password hashing
 - **Role-Based Access**: Four user roles (farmer, trader, sponsor, admin) with specific page access controls
 - **API Integration**: Created API client for frontend-backend communication
 - **Hugging Face AI**: Integrated AI assistant using Hugging Face API for farmer support
 - **New Dashboards**: Built Sponsor Dashboard (content upload) and Admin Dashboard (moderation)
-- **Workflows**: Configured dual workflows - Backend (port 3000) and Frontend (port 5000)
-- **Deployment**: Set up autoscale deployment for production with both servers running in parallel
+- **Unified Server**: Single Express server on port 5000 serves both API and static frontend files
+- **Deployment**: Configured autoscale deployment for production with simplified single-server architecture
 
 ## Technology Stack
 
@@ -235,20 +235,19 @@ For production deployment, ensure:
 ### Production Deployment
 The application is configured for autoscale deployment on Replit:
 - **Target**: Autoscale (stateless web application)
-- **Command**: Both backend (port 3000) and frontend (port 5000) running in parallel
-- **Backend**: Express server with PostgreSQL database
-- **Frontend**: Static file server with CORS enabled
+- **Port**: 5000 (single unified server)
+- **Server**: Express.js serving both REST API and static files
 - **Database**: PostgreSQL (Neon) with automatic backups
+- **Architecture**: Simplified single-server setup eliminates CORS issues
 
 ### Running the Application
 The application runs automatically via the Replit workflow system:
 ```bash
-# Backend (port 3000)
+# Single server on port 5000 (serves both API and static files)
 node server/index.js
-
-# Frontend (port 5000)
-npx http-server -p 5000 -a 0.0.0.0 --cors -c-1
 ```
+
+The Express backend now serves both the REST API endpoints and the static frontend files, simplifying deployment and avoiding CORS issues.
 
 ### Database Management
 ```bash

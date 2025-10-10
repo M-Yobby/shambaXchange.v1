@@ -16,12 +16,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'shambaXchange-secret-key-2024';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from root directory (frontend)
+app.use(express.static('.'));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // File upload configuration

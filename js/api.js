@@ -1,5 +1,6 @@
 // API Client for ShambaXchange
-const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://3000-' + window.location.hostname;
+// Both frontend and backend are served from the same origin now
+const API_URL = window.location.origin;
 
 class API {
   constructor() {
