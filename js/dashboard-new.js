@@ -3,6 +3,7 @@ import api from './api.js';
 
 let sales = [];
 let costs = [];
+let crops = [];
 
 // Set current date
 document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
@@ -29,6 +30,7 @@ document.getElementById('modalCostDate').value = today;
 document.addEventListener('DOMContentLoaded', async function() {
     await loadSales();
     await loadCosts();
+    await loadCrops();
     updateFinancialSummary();
 });
 
@@ -52,6 +54,51 @@ async function loadCosts() {
     }
 }
 
+async function loadCrops() {
+    try {
+        crops = await api.getCrops();
+        renderCropProgress();
+    } catch (error) {
+        console.error('Error loading crops:', error);
+        crops = [];
+        renderCropProgress();
+    }
+}
+
+function renderCropProgress() {
+    const container = document.getElementById('cropProgressContainer');
+    
+    if (crops.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666; padding: 1rem;">No crops added yet. Click "Add Crop" to start tracking.</p>';
+        return;
+    }
+    
+    container.innerHTML = crops.map(crop => {
+        const plantingDate = new Date(crop.plantingDate);
+        const harvestDate = new Date(crop.expectedHarvestDate);
+        const today = new Date();
+        
+        const totalDays = Math.max(1, (harvestDate - plantingDate) / (1000 * 60 * 60 * 24));
+        const daysElapsed = Math.max(0, (today - plantingDate) / (1000 * 60 * 60 * 24));
+        const progress = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
+        
+        const color = progress >= 80 ? '#4caf50' : progress >= 50 ? '#ff9800' : '#2196f3';
+        
+        return `
+            <div class="progress-item">
+                <div class="progress-header">
+                    <span>${crop.cropName} (${crop.fieldLocation})</span>
+                    <span>${Math.round(progress)}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%; background-color: ${color};"></div>
+                </div>
+                ${crop.notes ? `<p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">${crop.notes}</p>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
 // ---------- Quick Actions ----------
 document.getElementById("addSaleBtn").addEventListener("click", () => {
     document.getElementById("saleModal").style.display = "flex";
@@ -61,6 +108,17 @@ document.getElementById("addSaleBtn").addEventListener("click", () => {
 document.getElementById("addCostBtn").addEventListener("click", () => {
     document.getElementById("costModal").style.display = "flex";
     document.getElementById("overlay").style.display = "block";
+});
+
+// Add Crop
+document.getElementById("addCropBtn").addEventListener("click", () => {
+    document.getElementById("cropModal").style.display = "flex";
+    document.getElementById("overlay").style.display = "block";
+});
+
+document.getElementById("closeCropModal").addEventListener("click", () => {
+    document.getElementById("cropModal").style.display = "none";
+    document.getElementById("overlay").style.display = "none";
 });
 
 // Yield Calculator
@@ -280,6 +338,38 @@ document.getElementById("saveCostBtn").addEventListener("click", async () => {
         document.getElementById("overlay").style.display = "none";
     } catch (error) {
         alert('Error adding cost: ' + error.message);
+    }
+});
+
+// ---------- Add Crop ----------
+document.getElementById("cropForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const cropName = document.getElementById("cropName").value;
+    const fieldLocation = document.getElementById("fieldLocation").value;
+    const plantingDate = document.getElementById("plantingDate").value;
+    const expectedHarvestDate = document.getElementById("expectedHarvestDate").value;
+    const notes = document.getElementById("cropNotes").value;
+
+    const cropData = {
+        cropName,
+        fieldLocation,
+        plantingDate,
+        expectedHarvestDate,
+        notes
+    };
+
+    try {
+        const newCrop = await api.createCrop(cropData);
+        crops.push(newCrop);
+        renderCropProgress();
+
+        // Reset form
+        document.getElementById("cropForm").reset();
+        document.getElementById("cropModal").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    } catch (error) {
+        alert('Error adding crop: ' + error.message);
     }
 });
 

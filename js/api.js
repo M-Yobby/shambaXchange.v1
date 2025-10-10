@@ -108,6 +108,18 @@ class API {
     });
   }
 
+  // Crops
+  async getCrops() {
+    return await this.request('/api/crops');
+  }
+
+  async createCrop(cropData) {
+    return await this.request('/api/crops', {
+      method: 'POST',
+      body: JSON.stringify(cropData),
+    });
+  }
+
   // AI Chat
   async chatWithAI(message) {
     return await this.request('/api/ai/chat', {

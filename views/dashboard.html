@@ -85,26 +85,14 @@
 
             <!-- Crop Progress -->
             <div class="card">
-                <h3><i class="fas fa-seedling"></i> Crop Progress</h3>
-                <div class="progress-container">
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Maize (Field A)</span>
-                            <span>65%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 65%; background-color: #4caf50;"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-header">
-                            <span>Beans (Field B)</span>
-                            <span>40%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 40%; background-color: #ff9800;"></div>
-                        </div>
-                    </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3><i class="fas fa-seedling"></i> Crop Progress</h3>
+                    <button class="btn btn-primary" id="addCropBtn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+                        <i class="fas fa-plus"></i> Add Crop
+                    </button>
+                </div>
+                <div class="progress-container" id="cropProgressContainer">
+                    <p style="text-align: center; color: #666; padding: 1rem;">No crops added yet. Click "Add Crop" to start tracking.</p>
                 </div>
             </div>
         </div>
@@ -311,6 +299,46 @@
                 <div class="yield-value" id="yieldValue">0 kg</div>
                 <p id="yieldDetails">Based on your inputs</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Add Crop Modal -->
+    <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-seedling"></i> Add Crop</h3>
+                <span class="close" id="closeCropModal">&times;</span>
+            </div>
+            <form id="cropForm">
+                <div class="form-group">
+                    <label for="cropName">Crop Name</label>
+                    <input type="text" id="cropName" class="form-control" placeholder="e.g., Maize, Beans, Wheat" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fieldLocation">Field/Location</label>
+                    <input type="text" id="fieldLocation" class="form-control" placeholder="e.g., Field A, North Field" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="plantingDate">Planting Date</label>
+                    <input type="date" id="plantingDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="expectedHarvestDate">Expected Harvest Date</label>
+                    <input type="date" id="expectedHarvestDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cropNotes">Notes (optional)</label>
+                    <textarea id="cropNotes" class="form-control" placeholder="Additional notes about this crop..." rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-save"></i> Save Crop
+                </button>
+            </form>
         </div>
     </div>
 
