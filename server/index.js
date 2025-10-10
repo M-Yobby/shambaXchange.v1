@@ -22,9 +22,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'shambaXchange-secret-key-2024';
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from root directory (frontend)
-app.use(express.static('.'));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // File upload configuration
@@ -67,15 +64,18 @@ const requireRole = (...roles) => (req, res, next) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, email, password, fullName, role } = req.body;
+    console.log('Registration request:', { username, email, fullName, role });
 
     // Check if user exists
     const [existingUser] = await db.select().from(users).where(eq(users.username, username));
     if (existingUser) {
+      console.log('User already exists:', username);
       return res.status(400).json({ error: 'Username already exists' });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Password hashed successfully');
 
     // Create user
     const [newUser] = await db.insert(users).values({
@@ -86,6 +86,8 @@ app.post('/api/auth/register', async (req, res) => {
       role,
       lastLogin: new Date(),
     }).returning();
+
+    console.log('User created:', newUser.id, newUser.username);
 
     // Generate token
     const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '7d' });
@@ -103,7 +105,8 @@ app.post('/api/auth/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('Error details:', error.message, error.stack);
+    res.status(500).json({ error: 'Registration failed: ' + error.message });
   }
 });
 
@@ -568,6 +571,9 @@ app.get('/api/admin/users', authenticate, requireRole('admin'), async (req, res)
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
+
+// Serve static files AFTER all API routes (so API routes take precedence)
+app.use(express.static('.'));
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
