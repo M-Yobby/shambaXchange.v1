@@ -148,7 +148,34 @@ All data is stored in localStorage with these keys:
 - Images in Pestanol folder use .PNG extension (case-sensitive on some systems)
 
 ## Deployment Configuration
-To be configured for production deployment on Replit.
+
+### Production Deployment
+The application is configured for autoscale deployment on Replit:
+- **Target**: Autoscale (stateless web application)
+- **Command**: `npx http-server -p 5000 -a 0.0.0.0 --cors`
+- **Port**: 5000
+- **CORS**: Enabled for cross-origin requests
+
+### Security Considerations
+⚠️ **Important**: This is a demo/prototype application with the following security limitations:
+- **Authentication**: Uses client-side localStorage only (not production-ready)
+- **Password Storage**: Passwords stored in plaintext in localStorage (not secure)
+- **No Backend**: All data stored in browser (lost on cache clear)
+
+**For Production Use**: This application requires:
+1. Backend API with secure authentication (JWT, OAuth, etc.)
+2. Encrypted password storage with proper hashing (bcrypt, Argon2)
+3. Server-side session management
+4. HTTPS enforcement
+5. Input validation and sanitization
+6. CSRF protection
+7. Rate limiting
+
+The current implementation is suitable for:
+- Local development and testing
+- Proof of concept demonstrations
+- Learning and educational purposes
+- UI/UX prototyping
 
 ## Future Enhancements
 - Backend API integration
