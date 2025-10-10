@@ -15,10 +15,26 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Server"
+args = "Backend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Frontend"
 
 [[workflows.workflow]]
-name = "Server"
+name = "Backend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server/index.js"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "Frontend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -30,13 +46,13 @@ waitForPort = 5000
 outputType = "webview"
 
 [[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 33229
-externalPort = 3000
-
 [deployment]
 deploymentTarget = "autoscale"
-run = ["npx", "http-server", "-p", "5000", "-a", "0.0.0.0", "--cors"]
+run = ["bash", "-c", "node server/index.js & npx http-server -p 5000 -a 0.0.0.0 --cors"]

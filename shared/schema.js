@@ -138,18 +138,4 @@ export const sponsorContentRelations = relations(sponsorContent, ({ one }) => ({
   }),
 }));
 
-// Types
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
-export type Sale = typeof sales.$inferSelect;
-export type InsertSale = typeof sales.$inferInsert;
-export type Cost = typeof costs.$inferSelect;
-export type InsertCost = typeof costs.$inferInsert;
-export type Listing = typeof listings.$inferSelect;
-export type InsertListing = typeof listings.$inferInsert;
-export type Post = typeof posts.$inferSelect;
-export type InsertPost = typeof posts.$inferInsert;
-export type Comment = typeof comments.$inferSelect;
-export type InsertComment = typeof comments.$inferInsert;
-export type SponsorContent = typeof sponsorContent.$inferSelect;
-export type InsertSponsorContent = typeof sponsorContent.$inferInsert;
+// Types are inferred by Drizzle ORM at runtime

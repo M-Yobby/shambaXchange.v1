@@ -59,7 +59,7 @@
         
         <div class="form-group">
             <label>Select Role</label>
-            <div class="role-selection">
+            <div class="role-selection" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div class="role-option" data-role="farmer">
                     <div class="role-icon">👨‍🌾</div>
                     <div>Farmer</div>
@@ -67,6 +67,14 @@
                 <div class="role-option" data-role="trader">
                     <div class="role-icon">👨‍💼</div>
                     <div>Trader</div>
+                </div>
+                <div class="role-option" data-role="sponsor">
+                    <div class="role-icon">💼</div>
+                    <div>Sponsor</div>
+                </div>
+                <div class="role-option" data-role="admin">
+                    <div class="role-icon">🛡️</div>
+                    <div>Admin</div>
                 </div>
             </div>
         </div>
@@ -91,6 +99,6 @@
 
   </main>
 
-  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/auth-new.js"></script>
 </body>
 </html>

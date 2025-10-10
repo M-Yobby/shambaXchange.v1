@@ -6,8 +6,8 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { db } from './db.ts';
-import { users, sales, costs, listings, posts, comments, sponsorContent } from '../shared/schema.ts';
+import { db } from './db.js';
+import { users, sales, costs, listings, posts, comments, sponsorContent } from '../shared/schema.js';
 import { eq, desc, sql } from 'drizzle-orm';
 
 dotenv.config();

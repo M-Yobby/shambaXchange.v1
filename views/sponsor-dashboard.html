@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Sponsor Dashboard - shambaXchange</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../js/header-loader.js"></script>
+    <script src="../js/auth.js"></script>
+</head>
+<body>
+    <div id="header-container"></div>
+
+    <div id="dashboard">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-bullhorn"></i> Sponsor Dashboard</h1>
+            <button class="btn btn-primary" id="createContentBtn">
+                <i class="fas fa-plus"></i> Create Content
+            </button>
+        </div>
+
+        <div class="sponsor-stats">
+            <div class="card">
+                <h3>Total Content</h3>
+                <p class="stat-value" id="totalContent">0</p>
+            </div>
+            <div class="card">
+                <h3>Approved</h3>
+                <p class="stat-value" id="approvedContent">0</p>
+            </div>
+            <div class="card">
+                <h3>Pending</h3>
+                <p class="stat-value" id="pendingContent">0</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>My Sponsored Content</h3>
+            <div id="contentGrid" class="sponsor-content-grid"></div>
+        </div>
+    </div>
+
+    <!-- Create Content Modal -->
+    <div id="createContentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus"></i> Create Sponsored Content</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <form id="contentForm">
+                <div class="form-group">
+                    <label for="contentTitle">Title</label>
+                    <input type="text" id="contentTitle" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contentDescription">Description</label>
+                    <textarea id="contentDescription" class="form-control" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contentMedia">Upload Image/Video</label>
+                    <input type="file" id="contentMedia" class="form-control" accept="image/*,video/*" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="learnMoreUrl">Learn More URL (optional)</label>
+                    <input type="url" id="learnMoreUrl" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label>Key Features (one per line)</label>
+                    <textarea id="features" class="form-control" rows="3" placeholder="e.g., 100% Organic&#10;Increases yield by 30%"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-save"></i> Submit for Approval
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" style="display: none;"></div>
+
+    <script type="module">
+        import api from '../js/api.js';
+
+        // Modal controls
+        document.getElementById('createContentBtn').addEventListener('click', () => {
+            document.getElementById('createContentModal').style.display = 'flex';
+            document.getElementById('overlay').style.display = 'block';
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('createContentModal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        });
+
+        // Load content
+        async function loadContent() {
+            try {
+                const content = await api.getSponsorContent();
+                const total = content.length;
+                const approved = content.filter(c => c.isApproved).length;
+                const pending = content.filter(c => !c.isApproved).length;
+
+                document.getElementById('totalContent').textContent = total;
+                document.getElementById('approvedContent').textContent = approved;
+                document.getElementById('pendingContent').textContent = pending;
+
+                const grid = document.getElementById('contentGrid');
+                grid.innerHTML = '';
+
+                content.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'sponsor-card';
+                    card.innerHTML = `
+                        <div class="sponsor-card-media">
+                            ${item.mediaType === 'video' 
+                                ? `<video src="${item.mediaUrl}" controls></video>`
+                                : `<img src="${item.mediaUrl}" alt="${item.title}">`
+                            }
+                        </div>
+                        <div class="sponsor-card-content">
+                            <h4>${item.title}</h4>
+                            <p>${item.description}</p>
+                            <div class="sponsor-card-status">
+                                ${item.isApproved 
+                                    ? '<span class="badge badge-success">Approved</span>'
+                                    : '<span class="badge badge-warning">Pending Approval</span>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading content:', error);
+            }
+        }
+
+        // Submit content
+        document.getElementById('contentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('title', document.getElementById('contentTitle').value);
+            formData.append('description', document.getElementById('contentDescription').value);
+            formData.append('media', document.getElementById('contentMedia').files[0]);
+            formData.append('learnMoreUrl', document.getElementById('learnMoreUrl').value);
+
+            const featuresText = document.getElementById('features').value;
+            const features = featuresText.split('\n').filter(f => f.trim()).map(f => f.trim());
+            formData.append('features', JSON.stringify(features));
+
+            try {
+                await api.createSponsorContent(formData);
+                alert('Content submitted for approval!');
+                document.getElementById('contentForm').reset();
+                document.getElementById('createContentModal').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+                loadContent();
+            } catch (error) {
+                alert('Error creating content: ' + error.message);
+            }
+        });
+
+        // Initialize
+        loadContent();
+    </script>
+
+    <style>
+        .sponsor-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+        .sponsor-content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .sponsor-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .sponsor-card-media img,
+        .sponsor-card-media video {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .sponsor-card-content {
+            padding: 1rem;
+        }
+        .sponsor-card-content h4 {
+            margin-bottom: 0.5rem;
+        }
+        .sponsor-card-status {
+            margin-top: 1rem;
+        }
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+        }
+    </style>
+</body>
+</html>
