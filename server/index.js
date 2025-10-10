@@ -66,22 +66,16 @@ app.post('/api/auth/register', async (req, res) => {
     const { username, email, password, fullName, role } = req.body;
     console.log('Registration request:', { username, email, fullName, role });
 
-    // Check if user exists
-    console.log('Checking for existing user...');
-    console.log('Query params:', { username });
-    try {
-      const [existingUser] = await db.select().from(users).where(eq(users.username, username));
-      console.log('Query successful, existing user:', existingUser);
-      if (existingUser) {
-        console.log('User already exists:', username);
-        return res.status(400).json({ error: 'Username already exists' });
-      }
-    } catch (queryError) {
-      console.error('Query failed with error:', queryError);
-      console.error('Error name:', queryError.name);
-      console.error('Error message:', queryError.message);
-      console.error('Error stack:', queryError.stack);
-      throw queryError;
+    // Check if username exists
+    const [existingUsername] = await db.select().from(users).where(eq(users.username, username));
+    if (existingUsername) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+
+    // Check if email exists
+    const [existingEmail] = await db.select().from(users).where(eq(users.email, email));
+    if (existingEmail) {
+      return res.status(400).json({ error: 'Email already exists' });
     }
 
     // Hash password
@@ -116,8 +110,19 @@ app.post('/api/auth/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    console.error('Error details:', error.message, error.stack);
-    res.status(500).json({ error: 'Registration failed: ' + error.message });
+    
+    // Check for database constraint violations
+    if (error.cause?.code === '23505') {
+      const detail = error.cause.detail || '';
+      if (detail.includes('username')) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      if (detail.includes('email')) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+    }
+    
+    res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
 
