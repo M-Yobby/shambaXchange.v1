@@ -57,11 +57,18 @@ async function initializeAuth() {
 
 function populateNavigationMenu() {
     const navMenu = document.getElementById('navMenu');
-    if (!navMenu) return;
+    if (!navMenu) {
+        console.warn('navMenu element not found');
+        return;
+    }
 
     const user = getCurrentUser();
-    if (!user) return;
+    if (!user) {
+        console.warn('No user found when populating navigation menu');
+        return;
+    }
 
+    console.log('Populating navigation menu for user role:', user.role);
     navMenu.innerHTML = '';
 
     const roleMenus = {
@@ -72,6 +79,7 @@ function populateNavigationMenu() {
             { href: 'social.html', icon: 'fa-users', text: 'Social', page: 'social' },
         ],
         trader: [
+            { href: 'dashboard.html', icon: 'fa-tachometer-alt', text: 'Dashboard', page: 'dashboard', farmerOnly: true },
             { href: 'market.html', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
             { href: 'marketplace.html', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
             { href: 'social.html', icon: 'fa-users', text: 'Social', page: 'social' },
@@ -96,9 +104,21 @@ function populateNavigationMenu() {
         const inViewsFolder = window.location.pathname.toLowerCase().includes('/views/');
         const href = inViewsFolder ? item.href : `views/${item.href}`;
         
-        li.innerHTML = `<a href="${href}" class="nav-link" data-page="${item.page}">
-            <i class="fas ${item.icon}"></i> ${item.text}
-        </a>`;
+        const link = document.createElement('a');
+        link.href = href;
+        link.className = 'nav-link';
+        link.setAttribute('data-page', item.page);
+        link.innerHTML = `<i class="fas ${item.icon}"></i> ${item.text}`;
+        
+        // Add click handler for farmer-only pages when user is trader
+        if (item.farmerOnly && user.role === 'trader') {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('Dashboard is only available to farmers. Traders can access Market Intel, Marketplace, and Social features.');
+            });
+        }
+        
+        li.appendChild(link);
         navMenu.appendChild(li);
     });
 }
@@ -257,9 +277,12 @@ async function updateUserHeader() {
         const userDisplayName = document.getElementById('user-display-name');
         const userAvatar = document.getElementById('user-avatar');
         
+        console.log('Updating user header with user:', user);
+        
         if (user && userDisplayName) {
             const displayName = user.fullName || user.username || 'User';
             userDisplayName.textContent = displayName;
+            console.log('User display name set to:', displayName);
             userDisplayName.title = `${displayName} (${user.role})`;
             
             if (userAvatar) {
