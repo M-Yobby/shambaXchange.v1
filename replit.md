@@ -14,6 +14,17 @@ ShambaXchange is a comprehensive web-based agricultural platform designed to con
 The application is now a **full-stack web application** with PostgreSQL database backend, Express API server, and dynamic frontend. It features secure JWT authentication, role-based access control, and real-time data integration. The system supports four user roles: farmers, traders, sponsors, and admins.
 
 ## Recent Changes (October 10, 2025)
+
+### Latest Updates (Evening)
+- **Database Driver Fix**: Switched from @neondatabase/serverless to standard postgres driver for better Drizzle ORM compatibility
+- **Registration Fixed**: Added email uniqueness validation and improved error handling for duplicate users
+- **Header Navigation Fixed**: Corrected ES6 module loading for auth-new.js across all pages
+- **User Display Fixed**: User's actual name now displays in header instead of "Guest"
+- **Trader Access Control**: Traders can see Dashboard link but get "only available to farmers" alert when clicked
+- **Hugging Face AI Enhanced**: Improved prompt engineering and response parsing for contextual, Kenya-focused agricultural advice
+- **Navigation Menu**: All user roles now see appropriate navigation links based on their permissions
+
+### Earlier Today
 - **Backend Infrastructure**: Set up Express server with PostgreSQL database
 - **Database Schema**: Created comprehensive schema with Drizzle ORM for users, sales, costs, listings, posts, comments, and sponsor content
 - **Authentication**: Implemented JWT-based authentication with bcrypt password hashing
