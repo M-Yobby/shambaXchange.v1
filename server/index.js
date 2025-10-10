@@ -67,10 +67,21 @@ app.post('/api/auth/register', async (req, res) => {
     console.log('Registration request:', { username, email, fullName, role });
 
     // Check if user exists
-    const [existingUser] = await db.select().from(users).where(eq(users.username, username));
-    if (existingUser) {
-      console.log('User already exists:', username);
-      return res.status(400).json({ error: 'Username already exists' });
+    console.log('Checking for existing user...');
+    console.log('Query params:', { username });
+    try {
+      const [existingUser] = await db.select().from(users).where(eq(users.username, username));
+      console.log('Query successful, existing user:', existingUser);
+      if (existingUser) {
+        console.log('User already exists:', username);
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+    } catch (queryError) {
+      console.error('Query failed with error:', queryError);
+      console.error('Error name:', queryError.name);
+      console.error('Error message:', queryError.message);
+      console.error('Error stack:', queryError.stack);
+      throw queryError;
     }
 
     // Hash password
