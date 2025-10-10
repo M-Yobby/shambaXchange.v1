@@ -215,6 +215,7 @@ async function handleRegister(fullName, email, username, password, selectedRole)
     }
     
     try {
+        console.log('Registering user:', { fullName, email, username, role: selectedRole });
         const response = await api.register({
             fullName,
             email,
@@ -223,6 +224,7 @@ async function handleRegister(fullName, email, username, password, selectedRole)
             role: selectedRole
         });
         
+        console.log('Registration response:', response);
         currentUser = response.user;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         
@@ -234,6 +236,7 @@ async function handleRegister(fullName, email, username, password, selectedRole)
             window.location.href = redirectTo;
         }, 1000);
     } catch (error) {
+        console.error('Registration error:', error);
         showNotification(error.message || 'Registration failed', 'error');
     }
 }

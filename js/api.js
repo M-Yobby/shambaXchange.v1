@@ -33,11 +33,19 @@ class API {
     };
 
     try {
+      console.log('API Request:', `${API_URL}${endpoint}`, config);
       const response = await fetch(`${API_URL}${endpoint}`, config);
+      console.log('API Response status:', response.status, response.statusText);
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Request failed');
+        const errorText = await response.text();
+        console.error('API Error response:', errorText);
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.error || 'Request failed');
+        } catch (e) {
+          throw new Error(errorText || 'Request failed');
+        }
       }
 
       return await response.json();
