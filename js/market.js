@@ -1,6 +1,17 @@
 // js/market.js - creates charts and wires up market filters
 // Uses Chart.js loaded in the page
-document.addEventListener('DOMContentLoaded', function(){
+import api from './api.js';
+
+let marketListings = [];
+
+document.addEventListener('DOMContentLoaded', async function(){
+  // Load marketplace data
+  try {
+    marketListings = await api.getListings();
+  } catch (error) {
+    console.error('Error loading marketplace data:', error);
+    marketListings = [];
+  }
   // Render region filters
   const regionFilters = ['Western','North Rift','Central','Upper Eastern','Galana Kulalu'];
   const regionContainer = document.getElementById('region-filters');
@@ -17,41 +28,74 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  // Create analytics cards (high and low moving) with basic interactivity
+  // Analyze marketplace data for highest/lowest moving products
+  function analyzeMarketplace() {
+    if (marketListings.length === 0) {
+      return { highest: [], lowest: [] };
+    }
+
+    // Group listings by item and calculate stats
+    const productStats = {};
+    marketListings.forEach(listing => {
+      const item = listing.item.toLowerCase();
+      if (!productStats[item]) {
+        productStats[item] = {
+          name: listing.item,
+          count: 0,
+          totalQuantity: 0,
+          avgPrice: 0,
+          prices: [],
+          units: listing.units || 'kg'
+        };
+      }
+      productStats[item].count++;
+      productStats[item].totalQuantity += listing.quantity || 0;
+      productStats[item].prices.push(listing.price || 0);
+    });
+
+    // Calculate average prices
+    Object.keys(productStats).forEach(key => {
+      const stat = productStats[key];
+      stat.avgPrice = stat.prices.reduce((a, b) => a + b, 0) / stat.prices.length;
+    });
+
+    // Sort by listing count (most active = highest moving)
+    const sorted = Object.values(productStats).sort((a, b) => b.count - a.count);
+    
+    return {
+      highest: sorted.slice(0, 4),
+      lowest: sorted.slice(-4).reverse()
+    };
+  }
+
+  const { highest, lowest } = analyzeMarketplace();
+
+  // Create analytics cards (high and low moving) with real data
   const analyticsRoot = document.getElementById('market-analytics');
   if(analyticsRoot){
+    const highestHTML = highest.length > 0 
+      ? highest.map(p => `<li data-product="${p.name.toLowerCase().replace(/\s+/g, '-')}">${p.name} <span>KES ${Math.round(p.avgPrice)}/${p.units} (${p.count} listings)</span></li>`).join('')
+      : '<li>No marketplace data available</li>';
+    
+    const lowestHTML = lowest.length > 0
+      ? lowest.map(p => `<li data-product="${p.name.toLowerCase().replace(/\s+/g, '-')}">${p.name} <span>KES ${Math.round(p.avgPrice)}/${p.units} (${p.count} listings)</span></li>`).join('')
+      : '<li>No marketplace data available</li>';
+
     analyticsRoot.innerHTML = `
       <div class="analytics-card" id="high-moving-products">
         <h3>Highest Moving Products</h3>
-        <p class="click-hint">Click on products to view details</p>
+        <p class="click-hint">Based on marketplace activity</p>
         <ul class="product-list">
-          <li data-product="avocado">Avocado <span>KES 800/kg</span></li>
-          <li data-product="maize">Maize <span>KES 3,500/bag</span></li>
-          <li data-product="beans">Beans <span>KES 220/kg</span></li>
-          <li data-product="tomatoes">Tomatoes <span>KES 150/kg</span></li>
+          ${highestHTML}
         </ul>
-        <div class="product-detail" id="avocado-detail">
-          <h4>Avocado Market Details</h4>
-          <p><strong>Current Price:</strong> KES 800/kg</p>
-          <div class="price-graph"><canvas id="avocadoChart"></canvas></div>
-        </div>
-        <div class="product-detail" id="maize-detail">
-          <h4>Maize Market Details</h4>
-          <p><strong>Current Price:</strong> KES 3,500/bag</p>
-          <div class="price-graph"><canvas id="maizeChart"></canvas></div>
-        </div>
       </div>
 
       <div class="analytics-card" id="low-moving-products">
         <h3>Lowest Moving Products</h3>
-        <p class="click-hint">Click on products to view details</p>
+        <p class="click-hint">Based on marketplace activity</p>
         <ul class="product-list">
-          <li data-product="onions">Onions <span>KES 60/kg</span></li>
-          <li data-product="potatoes">Potatoes <span>KES 50/kg</span></li>
-          <li data-product="cabbage">Cabbage <span>KES 40/kg</span></li>
-          <li data-product="mangoes">Mangoes <span>KES 70/kg</span></li>
+          ${lowestHTML}
         </ul>
-        <div class="product-detail" id="onions-detail"><h4>Onions</h4><div class="price-graph"><canvas id="onionsChart"></canvas></div></div>
       </div>
 
       <div class="analytics-card">
