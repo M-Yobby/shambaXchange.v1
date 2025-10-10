@@ -99,6 +99,38 @@
     cursor:pointer;
 }
 
+.comment-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.comment-box input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.comment-box button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.comment-box button:hover {
+    background: #229954;
+}
+
+.trending-post:hover {
+    background: #f8f9fa;
+}
+
 @media (max-width: 900px) {
     .social-container {
         flex-direction: column;

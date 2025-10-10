@@ -9,8 +9,14 @@ async function fetchPosts() {
 }
 
 async function fetchTrending() {
-    // Placeholder for GET /api/social/trending
-    return Promise.resolve(sampleData.trending);
+    // Calculate trending posts based on engagement (likes + comments)
+    const posts = sampleData.posts.slice();
+    posts.sort((a, b) => {
+        const engagementA = a.likes + a.comments.length;
+        const engagementB = b.likes + b.comments.length;
+        return engagementB - engagementA;
+    });
+    return Promise.resolve(posts.slice(0, 5)); // Top 5 most engaged
 }
 
 async function fetchMostEngaged() {
@@ -81,11 +87,27 @@ function renderPosts(posts) {
 function renderTrending(list) {
     const node = document.getElementById('trending-list');
     node.innerHTML = '';
-    list.forEach(t => {
+    if (list.length === 0) {
+        node.innerHTML = '<p style="color:#888;font-size:0.9rem;">No trending posts yet</p>';
+        return;
+    }
+    list.forEach(post => {
+        const engagement = post.likes + post.comments.length;
         const el = document.createElement('div');
-        el.className = 'card';
-        el.style.marginBottom='10px';
-        el.innerHTML = `<strong>${t.title}</strong><p>${t.excerpt}</p>`;
+        el.className = 'trending-post';
+        el.style.cssText = 'padding:10px;border-bottom:1px solid #eee;cursor:pointer;';
+        el.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <img src="${post.user.avatar}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+                <strong style="font-size:0.9rem;">${post.user.name}</strong>
+            </div>
+            <p style="margin:4px 0;font-size:0.9rem;color:#555;">${post.text ? (post.text.length > 60 ? post.text.substring(0, 60) + '...' : post.text) : 'Post with media'}</p>
+            <div style="display:flex;gap:12px;font-size:0.85rem;color:#888;">
+                <span><i class="fas fa-heart"></i> ${post.likes}</span>
+                <span><i class="fas fa-comment"></i> ${post.comments.length}</span>
+                <span><i class="fas fa-fire"></i> ${engagement} engagement</span>
+            </div>
+        `;
         node.appendChild(el);
     });
 }
@@ -103,8 +125,39 @@ function renderMostEngaged(list) {
 // sample data (dummy)
 const sampleData = {
     posts: [
-        { id:'p1', user:{name:'Amina', avatar:'../assets/images/M.yobby.jpg'}, text:'Harvest was good this week! #blessed', media:null, likes:5, comments:[] },
-        { id:'p2', user:{name:'Otieno', avatar:'../assets/images/M.yobby.jpg'}, text:'Selling fresh tomatoes, inbox me.', media:null, likes:3, comments:[] }
+        { 
+            id:'p1', 
+            user:{name:'Amina', avatar:'../assets/images/M.yobby.jpg'}, 
+            text:'Harvest was good this week! #blessed', 
+            media:null, 
+            likes:8, 
+            comments:[
+                {id:'c1', text:'Congratulations! What crop?', user:{name:'John'}},
+                {id:'c2', text:'Amazing! Keep up the good work', user:{name:'Mary'}},
+                {id:'c3', text:'Blessings from Nakuru!', user:{name:'Peter'}}
+            ] 
+        },
+        { 
+            id:'p2', 
+            user:{name:'Otieno', avatar:'../assets/images/M.yobby.jpg'}, 
+            text:'Selling fresh tomatoes, inbox me.', 
+            media:null, 
+            likes:5, 
+            comments:[
+                {id:'c4', text:'How much per kg?', user:{name:'Sarah'}},
+                {id:'c5', text:'I am interested!', user:{name:'James'}}
+            ] 
+        },
+        { 
+            id:'p3', 
+            user:{name:'Grace', avatar:'../assets/images/M.yobby.jpg'}, 
+            text:'Just bought a new tractor! Excited to increase productivity', 
+            media:null, 
+            likes:12, 
+            comments:[
+                {id:'c6', text:'That is great news!', user:{name:'David'}}
+            ] 
+        }
     ],
     trending: [
         { id:'t1', title:'Maize prices spike', excerpt:'Local maize prices rose 12% this week.'},
@@ -131,13 +184,31 @@ async function handleLike(id) {
 
 function toggleCommentBox(id) {
     const box = document.getElementById('comment-box-'+id);
-    const comments = document.getElementById('comments-'+id);
+    const commentsContainer = document.getElementById('comments-'+id);
+    const post = sampleData.posts.find(p => p.id === id);
+    
     if (box.style.display === 'none') {
-        box.style.display = 'block';
-        comments.style.display = 'block';
+        box.style.display = 'flex';
+        commentsContainer.style.display = 'block';
+        
+        // Render existing comments
+        if (post && post.comments.length > 0) {
+            commentsContainer.innerHTML = '';
+            post.comments.forEach(comment => {
+                const commentEl = document.createElement('div');
+                commentEl.style.cssText = 'padding:8px;background:#f8f9fa;border-radius:6px;margin-bottom:6px;';
+                commentEl.innerHTML = `
+                    <strong style="font-size:0.9rem;">${comment.user.name}</strong>
+                    <p style="margin:4px 0 0 0;font-size:0.9rem;">${comment.text}</p>
+                `;
+                commentsContainer.appendChild(commentEl);
+            });
+        } else {
+            commentsContainer.innerHTML = '<p style="color:#888;font-size:0.85rem;padding:8px;">No comments yet. Be the first to comment!</p>';
+        }
     } else {
         box.style.display = 'none';
-        comments.style.display = 'none';
+        commentsContainer.style.display = 'none';
     }
 }
 
@@ -146,7 +217,9 @@ async function submitComment(id) {
     if (!input.value) return;
     await commentPost(id, input.value);
     input.value='';
+    // Re-render posts and trending to update engagement
     renderPosts(sampleData.posts);
+    renderTrending(await fetchTrending());
 }
 
 function handleShare(id) {
