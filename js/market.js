@@ -98,14 +98,13 @@ document.addEventListener('DOMContentLoaded', async function(){
         </ul>
       </div>
 
-      <div class="analytics-card">
+      <div class="analytics-card" id="price-trends-card">
         <h3>Commodity Price Trends</h3>
-        <p>Last 30 Days</p>
-        <div class="filters">
-          <button class="filter-btn active" data-group="grains">Grains</button>
-          <button class="filter-btn" data-group="vegetables">Vegetables</button>
-          <button class="filter-btn" data-group="fruits">Fruits</button>
-          <button class="filter-btn" data-group="animal">Animal</button>
+        <p>Select a product to view 30-day price trends</p>
+        <div style="margin-bottom: 1rem;">
+          <select id="product-search" class="form-control" style="max-width: 300px;">
+            <option value="">Select a product...</option>
+          </select>
         </div>
         <div class="chart-container"><canvas id="commodityTrendsChart"></canvas></div>
       </div>
@@ -123,30 +122,94 @@ document.addEventListener('DOMContentLoaded', async function(){
     });
   });
 
-  // Simple Chart: Commodity trends (sample data)
+  // Populate product search dropdown
+  const productSearch = document.getElementById('product-search');
+  if (productSearch && marketListings.length > 0) {
+    const uniqueProducts = [...new Set(marketListings.map(l => l.item))].sort();
+    uniqueProducts.forEach(product => {
+      const option = document.createElement('option');
+      option.value = product;
+      option.textContent = product;
+      productSearch.appendChild(option);
+    });
+  }
+
+  // Generate mock 30-day trend data for a product
+  function generate30DayTrend(basePrice) {
+    const data = [];
+    let price = basePrice;
+    for (let i = 0; i < 30; i++) {
+      // Add some randomness: +/- 5% variation
+      const change = (Math.random() - 0.5) * 0.1 * price;
+      price = Math.max(price + change, basePrice * 0.8); // Don't go below 80% of base
+      data.push(Math.round(price));
+    }
+    return data;
+  }
+
+  // Commodity trends chart with product search
+  let commodityChart = null;
   try{
     const ctx = document.getElementById('commodityTrendsChart').getContext('2d');
-    const chart = new Chart(ctx, {
+    
+    // Initial empty chart
+    commodityChart = new Chart(ctx, {
       type:'line',
       data:{
-        labels:['Week 1','Week 2','Week 3','Week 4'],
-        datasets:[
-          {label:'Maize (KES/bag)',data:[3200,3350,3450,3500],tension:0.3,borderColor:'#2E7D32',fill:true,backgroundColor:'rgba(46,125,50,0.08)'},
-          {label:'Avocado (KES/kg)',data:[700,750,780,800],tension:0.3,borderColor:'#4CAF50',fill:true,backgroundColor:'rgba(76,175,80,0.08)'}
-        ]
+        labels: Array.from({length: 30}, (_, i) => `Day ${i + 1}`),
+        datasets:[]
       },
-      options:{responsive:true,maintainAspectRatio:false}
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins: {
+          legend: { display: true, position: 'top' }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            ticks: {
+              callback: function(value) {
+                return 'KES ' + value;
+              }
+            }
+          }
+        }
+      }
     });
 
-    // mini charts for product details (if canvases exist)
-    function mini(id,data){
-      const el = document.getElementById(id);
-      if(!el) return;
-      new Chart(el.getContext('2d'),{type:'line',data:{labels:['W1','W2','W3','W4'],datasets:[{data,data,tension:0.3,borderColor:'#2196F3',fill:true,backgroundColor:'rgba(33,150,243,0.08)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
+    // Update chart when product is selected
+    if (productSearch) {
+      productSearch.addEventListener('change', function() {
+        const selectedProduct = this.value;
+        if (!selectedProduct) {
+          commodityChart.data.datasets = [];
+          commodityChart.update();
+          return;
+        }
+
+        // Find the product's average price
+        const productListings = marketListings.filter(l => l.item === selectedProduct);
+        if (productListings.length === 0) return;
+
+        const avgPrice = productListings.reduce((sum, l) => sum + (l.price || 0), 0) / productListings.length;
+        const units = productListings[0].units || 'kg';
+        
+        // Generate 30-day trend
+        const trendData = generate30DayTrend(avgPrice);
+        
+        commodityChart.data.datasets = [{
+          label: `${selectedProduct} (KES/${units})`,
+          data: trendData,
+          tension: 0.4,
+          borderColor: '#2E7D32',
+          fill: true,
+          backgroundColor: 'rgba(46,125,50,0.1)'
+        }];
+        
+        commodityChart.update();
+      });
     }
-    mini('avocadoChart',[700,750,780,800]);
-    mini('maizeChart',[3200,3350,3450,3500]);
-    mini('onionsChart',[80,75,65,60]);
   }catch(e){
     console.warn('Chart init error', e);
   }
