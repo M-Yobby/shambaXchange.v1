@@ -215,53 +215,58 @@ To test different user roles:
    - **Expert**: Expert Dashboard
    - **Admin**: Admin Dashboard
 
-### Data Storage
-All data is stored in localStorage with these keys:
-- `sx_users`: User accounts
-- `currentUser`: Currently logged-in user
-- `sx_listings`: Marketplace listings
-- `sales`: Sales records
-- `costs`: Cost records
-- `lastLogin`: Last login timestamp
+### Security Notes
+⚠️ **Production-Ready Security**: The application now includes:
+- JWT authentication with secure token management
+- Password hashing with bcrypt (10 salt rounds)
+- Role-based access control
+- Protected API endpoints
+- Environment variable management for sensitive data
+- CORS configuration for secure cross-origin requests
 
-### Known Issues
-- Password fields not in forms (browser warning - cosmetic only)
-- Some 404 errors for missing resources (non-critical)
-- Images in Pestanol folder use .PNG extension (case-sensitive on some systems)
+For production deployment, ensure:
+1. HTTPS is enabled
+2. Environment variables are properly configured
+3. Database connection is secure
+4. API rate limiting is implemented (future enhancement)
 
 ## Deployment Configuration
 
 ### Production Deployment
 The application is configured for autoscale deployment on Replit:
 - **Target**: Autoscale (stateless web application)
-- **Command**: `npx http-server -p 5000 -a 0.0.0.0 --cors`
-- **Port**: 5000
-- **CORS**: Enabled for cross-origin requests
+- **Command**: Both backend (port 3000) and frontend (port 5000) running in parallel
+- **Backend**: Express server with PostgreSQL database
+- **Frontend**: Static file server with CORS enabled
+- **Database**: PostgreSQL (Neon) with automatic backups
 
-### Security Considerations
-⚠️ **Important**: This is a demo/prototype application with the following security limitations:
-- **Authentication**: Uses client-side localStorage only (not production-ready)
-- **Password Storage**: Passwords stored in plaintext in localStorage (not secure)
-- **No Backend**: All data stored in browser (lost on cache clear)
+### Running the Application
+The application runs automatically via the Replit workflow system:
+```bash
+# Backend (port 3000)
+node server/index.js
 
-**For Production Use**: This application requires:
-1. Backend API with secure authentication (JWT, OAuth, etc.)
-2. Encrypted password storage with proper hashing (bcrypt, Argon2)
-3. Server-side session management
-4. HTTPS enforcement
-5. Input validation and sanitization
-6. CSRF protection
-7. Rate limiting
+# Frontend (port 5000)
+npx http-server -p 5000 -a 0.0.0.0 --cors -c-1
+```
 
-The current implementation is suitable for:
-- Local development and testing
-- Proof of concept demonstrations
-- Learning and educational purposes
-- UI/UX prototyping
+### Database Management
+```bash
+# Push schema changes to database
+npm run db:push
+
+# Force push (if data loss warning)
+npm run db:push --force
+```
 
 ## Future Enhancements
-- Backend API integration
-- Real-time weather data
-- Advanced analytics
-- Payment processing
-- Mobile app version
+- Real-time weather data integration
+- Advanced analytics and reporting
+- Payment processing for marketplace transactions
+- Mobile app version (React Native/Flutter)
+- Real-time notifications (WebSockets)
+- Multi-language support (i18n)
+- API rate limiting
+- Advanced search and filtering
+- Export/import data functionality
+- Integration with external agricultural APIs
