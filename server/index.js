@@ -19,8 +19,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'shambaXchange-secret-key-2024';
 
-// Middleware
-app.use(cors());
+// Middleware - Permissive CORS configuration for development
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true, // Allow cookies and authorization headers
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  // Don't limit allowed headers - let browser send what it needs
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -64,6 +69,29 @@ const requireRole = (...roles) => (req, res, next) => {
 // Mapbox token endpoint
 app.get('/api/config/mapbox-token', (req, res) => {
   res.json({ token: process.env.MAPBOX_PUBLIC_KEY || '' });
+});
+
+// API configuration endpoint - provides the correct API base URL to frontends
+app.get('/api/config/api-url', (req, res) => {
+  // Return the base URL for API requests
+  // This helps when frontend is served from a different origin
+  const apiUrl = process.env.API_URL || `http://localhost:${PORT}`;
+  res.json({ apiUrl });
+});
+
+// Serve dynamic config.js file that sets the API URL globally
+app.get('/config.js', (req, res) => {
+  const apiUrl = process.env.API_URL || req.protocol + '://' + req.get('host');
+  const configScript = `
+// Auto-generated config - provides correct API URL
+window.SHAMBAXCHANGE_CONFIG = {
+  apiUrl: '${apiUrl}'
+};
+console.log('ShambaXchange config loaded. API URL:', window.SHAMBAXCHANGE_CONFIG.apiUrl);
+  `.trim();
+  
+  res.set('Content-Type', 'application/javascript');
+  res.send(configScript);
 });
 
 // ==================== AUTH ROUTES ====================

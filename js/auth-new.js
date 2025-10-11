@@ -63,41 +63,18 @@ function populateNavigationMenu() {
     }
 
     const user = getCurrentUser();
-    if (!user) {
-        console.warn('No user found when populating navigation menu');
-        return;
-    }
-
-    console.log('Populating navigation menu for user role:', user.role);
+    const userRole = user ? user.role : 'guest';
+    
+    console.log('Populating navigation menu for user role:', userRole);
     navMenu.innerHTML = '';
 
-    const roleMenus = {
-        farmer: [
-            { href: '/dashboard', icon: 'fa-tachometer-alt', text: 'Farm Dashboard', page: 'dashboard' },
-            { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
-            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
-        ],
-        trader: [
-            { href: '/dashboard', icon: 'fa-tachometer-alt', text: 'Dashboard', page: 'dashboard', farmerOnly: true },
-            { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
-            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
-        ],
-        sponsor: [
-            { href: '/sponsor-dashboard', icon: 'fa-bullhorn', text: 'Sponsor Dashboard', page: 'sponsor-dashboard' },
-            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
-        ],
-        admin: [
-            { href: '/admin-dashboard', icon: 'fa-shield-alt', text: 'Admin Dashboard', page: 'admin-dashboard' },
-            { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
-            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
-        ],
-    };
-
-    const menuItems = roleMenus[user.role] || [];
+    // Standard navigation menu for all users (logged in or not)
+    const menuItems = [
+        { href: '/dashboard', icon: 'fa-tachometer-alt', text: 'Farm Dashboard', page: 'dashboard' },
+        { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
+        { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
+        { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
+    ];
     
     menuItems.forEach(item => {
         const li = document.createElement('li');
@@ -107,14 +84,6 @@ function populateNavigationMenu() {
         link.className = 'nav-link';
         link.setAttribute('data-page', item.page);
         link.innerHTML = `<i class="fas ${item.icon}"></i> ${item.text}`;
-        
-        // Add click handler for farmer-only pages when user is trader
-        if (item.farmerOnly && user.role === 'trader') {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                alert('Dashboard is only available to farmers. Traders can access Market Intel, Marketplace, and Social features.');
-            });
-        }
         
         li.appendChild(link);
         navMenu.appendChild(li);

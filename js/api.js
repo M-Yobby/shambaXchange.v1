@@ -1,6 +1,31 @@
 // API Client for ShambaXchange
-// Both frontend and backend are served from the same origin now
-const API_URL = window.location.origin;
+// API_URL is determined dynamically to support different deployment scenarios
+
+// Priority 1: Use global config if loaded from config.js
+// Priority 2: Fetch from API config endpoint
+// Priority 3: Fall back to window.location.origin
+let API_URL = window.SHAMBAXCHANGE_CONFIG?.apiUrl || window.location.origin;
+let API_URL_INITIALIZED = !!window.SHAMBAXCHANGE_CONFIG; // Already initialized if config exists
+
+// Try to get the correct API URL from the backend (handles cross-origin scenarios)
+async function ensureApiUrl() {
+  if (API_URL_INITIALIZED) return;
+  
+  try {
+    const response = await fetch(`${window.location.origin}/api/config/api-url`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.apiUrl) {
+        API_URL = data.apiUrl;
+        console.log('API URL configured from server:', API_URL);
+      }
+    }
+  } catch (error) {
+    console.warn('Could not fetch API URL config, using origin:', window.location.origin);
+    // If config fetch fails, stick with window.location.origin
+  }
+  API_URL_INITIALIZED = true;
+}
 
 class API {
   constructor() {
@@ -18,6 +43,9 @@ class API {
   }
 
   async request(endpoint, options = {}) {
+    // Ensure API URL is configured before making request
+    await ensureApiUrl();
+    
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -32,9 +60,14 @@ class API {
       headers,
     };
 
+    const fullUrl = `${API_URL}${endpoint}`;
+
     try {
-      console.log('API Request:', `${API_URL}${endpoint}`, config);
-      const response = await fetch(`${API_URL}${endpoint}`, config);
+      console.log('API Request:', fullUrl, config);
+      console.log('Current origin:', window.location.origin);
+      console.log('API_URL:', API_URL);
+      
+      const response = await fetch(fullUrl, config);
       console.log('API Response status:', response.status, response.statusText);
       
       if (!response.ok) {
@@ -51,6 +84,9 @@ class API {
       return await response.json();
     } catch (error) {
       console.error('API Error:', error);
+      console.error('Failed URL:', fullUrl);
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
       throw error;
     }
   }
