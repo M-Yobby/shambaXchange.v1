@@ -122,5 +122,11 @@ ShambaXchange is a comprehensive web-based agricultural platform connecting farm
 - **Fixed Login/Registration (Mixed Content Error)**:
   - Fixed "Failed to fetch" error preventing login and registration
   - Updated /config.js endpoint to detect HTTPS via X-Forwarded-Proto header
+  - Simplified api.js to use only config.js (removed conflicting /api/config/api-url endpoint)
+  - Added /config.js script to all pages (dashboard, marketplace, market, social)
   - Resolves mixed content security issue (HTTP requests from HTTPS pages)
   - API URL now correctly uses HTTPS when accessed via Replit's proxy
+  - Fixed "getting logged out" issue when switching between pages
+- **Fixed Missing Icons**:
+  - Added Font Awesome CSS to social.html for consistent icon display
+  - All pages now have proper icon support

@@ -1,30 +1,15 @@
 // API Client for ShambaXchange
-// API_URL is determined dynamically to support different deployment scenarios
+// API_URL is determined from config.js which is loaded in the HTML <head>
 
-// Priority 1: Use global config if loaded from config.js
-// Priority 2: Fetch from API config endpoint
-// Priority 3: Fall back to window.location.origin
+// Use the API URL from config.js, or fall back to current origin
 let API_URL = window.SHAMBAXCHANGE_CONFIG?.apiUrl || window.location.origin;
-let API_URL_INITIALIZED = !!window.SHAMBAXCHANGE_CONFIG; // Already initialized if config exists
 
-// Try to get the correct API URL from the backend (handles cross-origin scenarios)
-async function ensureApiUrl() {
-  if (API_URL_INITIALIZED) return;
-  
-  try {
-    const response = await fetch(`${window.location.origin}/api/config/api-url`);
-    if (response.ok) {
-      const data = await response.json();
-      if (data.apiUrl) {
-        API_URL = data.apiUrl;
-        console.log('API URL configured from server:', API_URL);
-      }
-    }
-  } catch (error) {
-    console.warn('Could not fetch API URL config, using origin:', window.location.origin);
-    // If config fetch fails, stick with window.location.origin
+// Simple function to ensure API URL is set (no async fetch needed)
+function ensureApiUrl() {
+  // Check if config has been updated since initial load
+  if (window.SHAMBAXCHANGE_CONFIG?.apiUrl && API_URL !== window.SHAMBAXCHANGE_CONFIG.apiUrl) {
+    API_URL = window.SHAMBAXCHANGE_CONFIG.apiUrl;
   }
-  API_URL_INITIALIZED = true;
 }
 
 class API {
@@ -44,7 +29,7 @@ class API {
 
   async request(endpoint, options = {}) {
     // Ensure API URL is configured before making request
-    await ensureApiUrl();
+    ensureApiUrl();
     
     const headers = {
       'Content-Type': 'application/json',
