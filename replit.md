@@ -90,3 +90,32 @@ ShambaXchange is a comprehensive web-based agricultural platform connecting farm
 - Added 10MB file size limit for media uploads with error messaging
 - User-to-user messaging feature with "Message" buttons
 - Fixed Buy/Sell toggle buttons with proper active states
+
+### Navigation System Restructuring (October 11, 2025)
+- **Two-Line Header Structure**: Implemented strict two-line layout across all pages
+  - Top line: ONLY shambaXchange logo (centered)
+  - Second line: ONLY navigation pages (centered)
+  - User actions (notifications, profile) removed from header for cleaner layout
+- **Unified Navigation Menu**: All users see the same four navigation pages
+  - "Farm Dashboard", "Market Intel", "Marketplace", "Social"
+  - Consistent for all roles (farmer, trader, sponsor, admin) and even unauthenticated users
+  - Access control handled by enforceAuth() function, not by hiding menu items
+- **Clean URL Routing**: Implemented clean URLs for all main pages
+  - `/dashboard` for Farm Dashboard
+  - `/market` for Market Intel
+  - `/marketplace` for Marketplace
+  - `/social` for Social Feed
+  - Legacy .html paths still work for backward compatibility
+- **API Configuration System**: Added dynamic API URL configuration
+  - `/config.js` endpoint provides API_URL to frontend
+  - Supports cross-origin deployments and different environments
+  - Improved CORS handling with explicit origin logging
+- **Shared Header Partial**: Single header template (views/partials/header.html) ensures consistency
+  - All pages include the same header structure
+  - Dynamic menu population via auth-new.js
+  - Green theme maintained across all navigation elements
+- **Fixed Header Loading Issues**:
+  - Removed conflicting app.js from marketplace, market, and social pages
+  - Fixed timing issue where enforceAuth() was running before header loaded
+  - Header now loads successfully via header-loader.js
+  - Authentication check deferred until after header is fully loaded

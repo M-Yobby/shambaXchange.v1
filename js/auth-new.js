@@ -12,6 +12,7 @@ window.onHeaderLoaded = async function() {
     initializeUserFeatures();
     highlightCurrentPage();
     populateNavigationMenu();
+    enforceAuth();  // Check authentication AFTER header is loaded
 };
 
 async function initializeAuth() {
@@ -37,9 +38,8 @@ async function initializeAuth() {
         await updateUserHeader();
         highlightCurrentPage();
         populateNavigationMenu();
+        enforceAuth();  // Only enforce if header already loaded
     }
-    
-    enforceAuth();
         
     // Initialize appropriate components based on current page
     const path = window.location.pathname.toLowerCase();
