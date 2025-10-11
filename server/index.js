@@ -81,7 +81,11 @@ app.get('/api/config/api-url', (req, res) => {
 
 // Serve dynamic config.js file that sets the API URL globally
 app.get('/config.js', (req, res) => {
-  const apiUrl = process.env.API_URL || req.protocol + '://' + req.get('host');
+  // Check for forwarded protocol (from proxy like Replit's HTTPS proxy)
+  const protocol = req.get('X-Forwarded-Proto') || req.protocol;
+  const host = req.get('host');
+  const apiUrl = process.env.API_URL || `${protocol}://${host}`;
+  
   const configScript = `
 // Auto-generated config - provides correct API URL
 window.SHAMBAXCHANGE_CONFIG = {

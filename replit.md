@@ -119,3 +119,8 @@ ShambaXchange is a comprehensive web-based agricultural platform connecting farm
   - Fixed timing issue where enforceAuth() was running before header loaded
   - Header now loads successfully via header-loader.js
   - Authentication check deferred until after header is fully loaded
+- **Fixed Login/Registration (Mixed Content Error)**:
+  - Fixed "Failed to fetch" error preventing login and registration
+  - Updated /config.js endpoint to detect HTTPS via X-Forwarded-Proto header
+  - Resolves mixed content security issue (HTTP requests from HTTPS pages)
+  - API URL now correctly uses HTTPS when accessed via Replit's proxy
