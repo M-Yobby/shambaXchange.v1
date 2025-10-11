@@ -30,6 +30,42 @@
         <button class="btn btn-primary" id="export-data-btn"><i class="fas fa-download"></i> Export Data</button>
       </div>
 
+      <!-- Location Search Bar -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <h2 class="card-title"><i class="fas fa-search-location"></i> Search by Location</h2>
+        </div>
+        <div style="padding: 1rem;">
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <div style="flex: 1; position: relative;">
+              <input 
+                type="text" 
+                id="location-search" 
+                placeholder="Enter your county or location (e.g., Nairobi, Nakuru, Kisumu...)" 
+                style="width: 100%; padding: 0.8rem 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; color: #333;"
+                list="kenya-counties"
+              />
+              <datalist id="kenya-counties">
+                <option value="Nairobi">Nairobi County</option>
+                <option value="Nakuru">Nakuru County</option>
+                <option value="Kiambu">Kiambu County</option>
+                <option value="Kisumu">Kisumu County</option>
+                <option value="Mombasa">Mombasa County</option>
+                <option value="Uasin Gishu">Uasin Gishu County</option>
+                <option value="Kakamega">Kakamega County</option>
+                <option value="Machakos">Machakos County</option>
+                <option value="Meru">Meru County</option>
+                <option value="Nyeri">Nyeri County</option>
+              </datalist>
+            </div>
+            <button id="search-location-btn" class="btn btn-primary" style="padding: 0.8rem 1.5rem;">
+              <i class="fas fa-search"></i> Search
+            </button>
+          </div>
+          <div id="location-result" style="margin-top: 1rem; color: #666; font-size: 0.9rem;"></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <h2 class="card-title"><i class="fas fa-map"></i> Regional Market Overview</h2>

@@ -418,6 +418,82 @@ app.post('/api/listings', authenticate, async (req, res) => {
   }
 });
 
+// Regional Market Analytics - Get market data by location
+app.get('/api/market/regional', authenticate, async (req, res) => {
+  try {
+    const { location } = req.query;
+    
+    if (!location) {
+      return res.status(400).json({ error: 'Location parameter is required' });
+    }
+
+    // County to region mapping (Kenya's 8 agricultural regions)
+    const countyToRegion = {
+      'Nairobi': 'Central', 'Kiambu': 'Central', 'Murang\'a': 'Central', 'Nyeri': 'Central', 'Kirinyaga': 'Central', 'Nyandarua': 'Central', 'Embu': 'Central', 'Tharaka-Nithi': 'Central',
+      'Mombasa': 'Coast', 'Kwale': 'Coast', 'Kilifi': 'Coast', 'Tana River': 'Coast', 'Lamu': 'Coast', 'Taita-Taveta': 'Coast',
+      'Nakuru': 'Rift Valley', 'Uasin Gishu': 'Rift Valley', 'Trans Nzoia': 'Rift Valley', 'Nandi': 'Rift Valley', 'Baringo': 'Rift Valley', 'Laikipia': 'Rift Valley', 'Kericho': 'Rift Valley', 'Bomet': 'Rift Valley', 'Kajiado': 'Rift Valley', 'Narok': 'Rift Valley', 'Samburu': 'Rift Valley', 'Turkana': 'Rift Valley', 'West Pokot': 'Rift Valley', 'Elgeyo-Marakwet': 'Rift Valley',
+      'Kisumu': 'Nyanza', 'Siaya': 'Nyanza', 'Homa Bay': 'Nyanza', 'Migori': 'Nyanza', 'Kisii': 'Nyanza', 'Nyamira': 'Nyanza',
+      'Kakamega': 'Western', 'Vihiga': 'Western', 'Bungoma': 'Western', 'Busia': 'Western',
+      'Machakos': 'Eastern', 'Kitui': 'Eastern', 'Makueni': 'Eastern', 'Meru': 'Eastern', 'Isiolo': 'Eastern', 'Marsabit': 'Eastern',
+      'Garissa': 'North Eastern', 'Wajir': 'North Eastern', 'Mandera': 'North Eastern'
+    };
+
+    // Normalize location input
+    const normalizedLocation = location.replace(/\s*County\s*/i, '').trim();
+    const region = countyToRegion[normalizedLocation] || 'Unknown';
+
+    // Get all listings from this location (exact match) or region
+    const regionalListings = await db.select()
+      .from(listings)
+      .where(
+        sql`LOWER(${listings.location}) LIKE ${`%${normalizedLocation.toLowerCase()}%`}`
+      );
+
+    // Calculate product statistics
+    const productStats = {};
+    regionalListings.forEach(listing => {
+      const product = listing.item;
+      if (!productStats[product]) {
+        productStats[product] = {
+          name: product,
+          totalQuantity: 0,
+          count: 0,
+          avgPrice: 0,
+          totalPrice: 0,
+          category: listing.category
+        };
+      }
+      productStats[product].totalQuantity += Number(listing.quantity) || 0;
+      productStats[product].count += 1;
+      productStats[product].totalPrice += Number(listing.price) || 0;
+    });
+
+    // Calculate averages and sort
+    const productsArray = Object.values(productStats).map(stat => ({
+      ...stat,
+      avgPrice: stat.count > 0 ? (stat.totalPrice / stat.count).toFixed(2) : 0
+    }));
+
+    // Sort by total quantity to find highest and lowest moving
+    productsArray.sort((a, b) => b.totalQuantity - a.totalQuantity);
+
+    const highestMoving = productsArray.slice(0, 5);
+    const lowestMoving = productsArray.slice(-5).reverse();
+
+    res.json({
+      location: normalizedLocation,
+      region,
+      totalListings: regionalListings.length,
+      highestMoving,
+      lowestMoving,
+      allProducts: productsArray
+    });
+  } catch (error) {
+    console.error('Regional market error:', error);
+    res.status(500).json({ error: 'Failed to fetch regional market data' });
+  }
+});
+
 // ==================== SOCIAL ROUTES ====================
 
 app.get('/api/posts', authenticate, async (req, res) => {

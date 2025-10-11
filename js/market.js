@@ -387,4 +387,92 @@ document.addEventListener('DOMContentLoaded', async function(){
       alertsRoot.appendChild(d);
     });
   }
+
+  // Location Search Handler
+  const searchBtn = document.getElementById('search-location-btn');
+  const locationInput = document.getElementById('location-search');
+  const locationResult = document.getElementById('location-result');
+
+  async function searchLocationMarket() {
+    const location = locationInput.value.trim();
+    
+    if (!location) {
+      locationResult.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a location';
+      locationResult.style.color = '#f44336';
+      return;
+    }
+
+    locationResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching market data...';
+    locationResult.style.color = '#666';
+
+    try {
+      const response = await api.request(`/api/market/regional?location=${encodeURIComponent(location)}`);
+      
+      locationResult.innerHTML = `
+        <i class="fas fa-check-circle"></i> 
+        Found ${response.totalListings} listings in <strong>${response.location}</strong> (${response.region} Region)
+      `;
+      locationResult.style.color = '#2E7D32';
+
+      // Update analytics with regional data
+      renderRegionalAnalytics(response);
+      
+      // Update map region indicator
+      document.getElementById('selected-region-info').innerHTML = `
+        <i class="fas fa-location-dot"></i> Viewing: ${response.location} - ${response.region} Region (${response.totalListings} listings)
+      `;
+    } catch (error) {
+      console.error('Location search error:', error);
+      locationResult.innerHTML = '<i class="fas fa-times-circle"></i> Could not find market data for this location';
+      locationResult.style.color = '#f44336';
+    }
+  }
+
+  function renderRegionalAnalytics(data) {
+    const analyticsRoot = document.getElementById('market-analytics');
+    if (!analyticsRoot) return;
+
+    const highestHTML = data.highestMoving.length > 0 
+      ? data.highestMoving.map(p => `
+          <li>${p.name} 
+            <span>KES ${p.avgPrice}/${p.category || 'unit'} (${p.count} listings, ${p.totalQuantity} total)</span>
+          </li>
+        `).join('')
+      : '<li>No data available</li>';
+
+    const lowestHTML = data.lowestMoving.length > 0 
+      ? data.lowestMoving.map(p => `
+          <li>${p.name} 
+            <span>KES ${p.avgPrice}/${p.category || 'unit'} (${p.count} listings, ${p.totalQuantity} total)</span>
+          </li>
+        `).join('')
+      : '<li>No data available</li>';
+
+    analyticsRoot.innerHTML = `
+      <div class="analytics-card">
+        <div class="analytics-header">
+          <h3><i class="fas fa-arrow-trend-up"></i> Highest Moving Products</h3>
+          <span class="analytics-badge">${data.location}</span>
+        </div>
+        <ul class="analytics-list">${highestHTML}</ul>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-header">
+          <h3><i class="fas fa-arrow-trend-down"></i> Lowest Moving Products</h3>
+          <span class="analytics-badge">${data.location}</span>
+        </div>
+        <ul class="analytics-list">${lowestHTML}</ul>
+      </div>
+    `;
+  }
+
+  // Attach search handler
+  if (searchBtn) {
+    searchBtn.addEventListener('click', searchLocationMarket);
+    locationInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        searchLocationMarket();
+      }
+    });
+  }
 });
