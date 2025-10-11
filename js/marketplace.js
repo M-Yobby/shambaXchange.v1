@@ -113,35 +113,37 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // initial render
   renderHorizontal();
 
-  // Market Social: posts with media grid
+  // Market Social: posts with media grid (only if elements exist)
   const postBtn = document.querySelector('.post-btn');
   const postInput = document.querySelector('.post-input');
   const postsRoot = document.getElementById('social-posts');
   const mediaUpload = document.getElementById('media-upload');
 
-  function renderMediaGrid(files){
-    // returns HTML grid of media previews
-    let s = '<div class="media-grid">';
-    for(const file of files){
-      if(file.type.startsWith('image/')){
-        s += `<div class="media-cell"><img src="${URL.createObjectURL(file)}" alt="img" /></div>`;
-      } else if(file.type.startsWith('video/')){
-        s += `<div class="media-cell"><video controls><source src="${URL.createObjectURL(file)}"></video></div>`;
+  if (postBtn && postInput && postsRoot && mediaUpload) {
+    function renderMediaGrid(files){
+      // returns HTML grid of media previews
+      let s = '<div class="media-grid">';
+      for(const file of files){
+        if(file.type.startsWith('image/')){
+          s += `<div class="media-cell"><img src="${URL.createObjectURL(file)}" alt="img" /></div>`;
+        } else if(file.type.startsWith('video/')){
+          s += `<div class="media-cell"><video controls><source src="${URL.createObjectURL(file)}"></video></div>`;
+        }
       }
+      s += '</div>';
+      return s;
     }
-    s += '</div>';
-    return s;
-  }
 
-  postBtn.addEventListener('click', ()=>{
-    const text = postInput.value.trim();
-    if(!text && mediaUpload.files.length===0){ alert('Write something or upload media before posting.'); return; }
-    const post = document.createElement('div');
-    post.className = 'post-card';
-    const mediaHtml = mediaUpload.files.length ? renderMediaGrid(mediaUpload.files) : '';
-    post.innerHTML = `<div class="post-header"><img src="https://randomuser.me/api/portraits/men/45.jpg" class="farmer-avatar" alt="You"/><strong>You</strong></div><div class="post-body"><p>${text}</p>${mediaHtml}</div>`;
-    postsRoot.prepend(post);
-    postInput.value = '';
-    mediaUpload.value = '';
-  });
+    postBtn.addEventListener('click', ()=>{
+      const text = postInput.value.trim();
+      if(!text && mediaUpload.files.length===0){ alert('Write something or upload media before posting.'); return; }
+      const post = document.createElement('div');
+      post.className = 'post-card';
+      const mediaHtml = mediaUpload.files.length ? renderMediaGrid(mediaUpload.files) : '';
+      post.innerHTML = `<div class="post-header"><img src="https://randomuser.me/api/portraits/men/45.jpg" class="farmer-avatar" alt="You"/><strong>You</strong></div><div class="post-body"><p>${text}</p>${mediaHtml}</div>`;
+      postsRoot.prepend(post);
+      postInput.value = '';
+      mediaUpload.value = '';
+    });
+  }
 });

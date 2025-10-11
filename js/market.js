@@ -3,6 +3,19 @@
 import api from './api.js';
 
 let marketListings = [];
+let selectedRegion = null;
+
+// Kenya's main agricultural regions from north to south
+const kenyaRegions = [
+  { name: 'Northern Region', coords: [37.5, 2.5], products: ['Livestock', 'Sorghum', 'Millet'] },
+  { name: 'Rift Valley', coords: [35.5, 0.5], products: ['Maize', 'Wheat', 'Pyrethrum', 'Tea'] },
+  { name: 'Western Region', coords: [34.5, 0.0], products: ['Sugarcane', 'Maize', 'Tea'] },
+  { name: 'Central Region', coords: [37.0, -0.5], products: ['Coffee', 'Tea', 'Horticultural Crops'] },
+  { name: 'Eastern Region', coords: [38.0, -1.0], products: ['Cotton', 'Sunflower', 'Fruits'] },
+  { name: 'Nyanza Region', coords: [34.5, -0.8], products: ['Rice', 'Sugarcane', 'Fish'] },
+  { name: 'Coast Region', coords: [39.5, -3.5], products: ['Coconuts', 'Cashew Nuts', 'Mangoes', 'Cassava'] },
+  { name: 'Nairobi & Surroundings', coords: [36.8, -1.3], products: ['Vegetables', 'Flowers', 'Dairy'] }
+];
 
 document.addEventListener('DOMContentLoaded', async function(){
   // Load marketplace data
@@ -12,31 +25,158 @@ document.addEventListener('DOMContentLoaded', async function(){
     console.error('Error loading marketplace data:', error);
     marketListings = [];
   }
-  // Render region filters
-  const regionFilters = ['Western','North Rift','Central','Upper Eastern','Galana Kulalu'];
-  const regionContainer = document.getElementById('region-filters');
-  if(regionContainer){
-    regionFilters.forEach((r,i)=>{
-      const btn = document.createElement('button');
-      btn.className = 'filter-btn' + (i===0 ? ' active' : '');
-      btn.textContent = r;
-      btn.addEventListener('click', ()=> {
-        document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
+
+  // Initialize Mapbox map
+  initializeMap();
+
+  // Initialize Mapbox Map
+  function initializeMap() {
+    const mapboxToken = window.location.hostname.includes('replit') 
+      ? 'MAPBOX_PUBLIC_KEY_PLACEHOLDER' // Will be replaced server-side
+      : 'pk.test';
+
+    // Fetch token from environment
+    fetch('/api/config/mapbox-token')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.token || data.token === '') {
+          throw new Error('Mapbox token not configured');
+        }
+        
+        mapboxgl.accessToken = data.token;
+        
+        const map = new mapboxgl.Map({
+          container: 'kenya-map',
+          style: 'mapbox://styles/mapbox/outdoors-v12',
+          center: [37.9, 0.0], // Center of Kenya
+          zoom: 5.5
+        });
+
+        // Add navigation controls
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Add markers for each region
+        map.on('load', () => {
+          kenyaRegions.forEach((region, index) => {
+            // Create marker
+            const marker = new mapboxgl.Marker({ color: '#2E7D32' })
+              .setLngLat(region.coords)
+              .setPopup(
+                new mapboxgl.Popup({ offset: 25 })
+                  .setHTML(`
+                    <div style="padding: 0.5rem;">
+                      <h3 style="margin: 0 0 0.5rem 0; color: #2E7D32;">${region.name}</h3>
+                      <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem;">Key Products:</p>
+                      <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.85rem;">
+                        ${region.products.map(p => `<li>${p}</li>`).join('')}
+                      </ul>
+                      <button 
+                        onclick="selectRegionFromMap('${region.name}')" 
+                        style="margin-top: 0.5rem; padding: 0.4rem 0.8rem; background: #2E7D32; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
+                        View Market Data
+                      </button>
+                    </div>
+                  `)
+              )
+              .addTo(map);
+
+            // Click event for marker
+            marker.getElement().addEventListener('click', () => {
+              selectRegion(region.name);
+            });
+          });
+        });
+      })
+      .catch(error => {
+        console.error('Error loading map:', error);
+        const mapContainer = document.getElementById('kenya-map');
+        if (mapContainer) {
+          mapContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f5f5f5; color: #666; padding: 2rem;">
+              <div style="text-align: center; max-width: 400px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; color: #f57c00;"></i>
+                <h3 style="margin-bottom: 0.5rem;">Map Loading Error</h3>
+                <p style="font-size: 0.9rem;">
+                  ${error.message === 'Mapbox token not configured' 
+                    ? 'Mapbox access token is not configured. Please add MAPBOX_PUBLIC_KEY to environment variables.' 
+                    : 'Unable to load the map. Please check your internet connection and try again.'}
+                </p>
+              </div>
+            </div>
+          `;
+        }
       });
-      regionContainer.appendChild(btn);
-    });
+  }
+
+  // Make selectRegion available globally for popup button
+  window.selectRegionFromMap = selectRegion;
+
+  function selectRegion(regionName) {
+    selectedRegion = regionName;
+    const regionInfo = document.getElementById('selected-region-info');
+    if (regionInfo) {
+      const region = kenyaRegions.find(r => r.name === regionName);
+      regionInfo.innerHTML = `
+        <i class="fas fa-location-dot"></i> 
+        <strong>${regionName}</strong> - 
+        Key Products: ${region.products.join(', ')}
+      `;
+    }
+    
+    // Update analytics based on region
+    updateAnalytics(regionName);
+  }
+
+  // Map counties/cities to agricultural regions (all 47 counties of Kenya)
+  const locationToRegion = {
+    'northern region': ['marsabit', 'turkana', 'mandera', 'wajir', 'isiolo', 'samburu', 'garissa'],
+    'rift valley': ['nakuru', 'narok', 'kajiado', 'kericho', 'bomet', 'uasin gishu', 'nandi', 'trans nzoia', 'elgeyo marakwet', 'baringo', 'laikipia', 'west pokot'],
+    'western region': ['kakamega', 'bungoma', 'busia', 'vihiga'],
+    'central region': ['kiambu', 'muranga', 'murang\'a', 'nyeri', 'kirinyaga', 'nyandarua'],
+    'eastern region': ['embu', 'tharaka nithi', 'tharaka-nithi', 'meru', 'kitui', 'machakos', 'makueni'],
+    'nyanza region': ['kisumu', 'siaya', 'homa bay', 'homabay', 'migori', 'kisii', 'nyamira'],
+    'coast region': ['mombasa', 'kwale', 'kilifi', 'tana river', 'lamu', 'taita taveta', 'taita-taveta'],
+    'nairobi & surroundings': ['nairobi']
+  };
+
+  function getRegionForLocation(location) {
+    // Normalize location string (lowercase, remove extra spaces/punctuation)
+    const locationLower = (location || '').toLowerCase().trim().replace(/['-]/g, ' ');
+    
+    for (const [region, counties] of Object.entries(locationToRegion)) {
+      // Check if any county name appears in the location string
+      if (counties.some(county => {
+        const countyNormalized = county.replace(/['-]/g, ' ');
+        return locationLower.includes(countyNormalized);
+      })) {
+        return region;
+      }
+    }
+    return null;
   }
 
   // Analyze marketplace data for highest/lowest moving products
-  function analyzeMarketplace() {
-    if (marketListings.length === 0) {
+  function analyzeMarketplace(regionFilter = null) {
+    let filteredListings = marketListings;
+    
+    // Filter by region if specified
+    if (regionFilter && marketListings.length > 0) {
+      const regionLower = regionFilter.toLowerCase();
+      filteredListings = marketListings.filter(listing => {
+        const listingRegion = getRegionForLocation(listing.location);
+        if (!listingRegion) return false;
+        // Match region name or partial match (e.g., "rift valley" matches "Rift Valley")
+        return listingRegion === regionLower || regionLower.includes(listingRegion) || listingRegion.includes(regionLower.split(' ')[0]);
+      });
+    }
+
+    if (filteredListings.length === 0) {
       return { highest: [], lowest: [] };
     }
 
     // Group listings by item and calculate stats
     const productStats = {};
-    marketListings.forEach(listing => {
+    filteredListings.forEach(listing => {
       const item = listing.item.toLowerCase();
       if (!productStats[item]) {
         productStats[item] = {
@@ -68,22 +208,29 @@ document.addEventListener('DOMContentLoaded', async function(){
     };
   }
 
-  const { highest, lowest } = analyzeMarketplace();
+  function updateAnalytics(regionFilter = null) {
+    const { highest, lowest } = analyzeMarketplace(regionFilter);
+    renderAnalyticsCards(highest, lowest, regionFilter);
+  }
 
-  // Create analytics cards (high and low moving) with real data
-  const analyticsRoot = document.getElementById('market-analytics');
-  if(analyticsRoot){
+  // Initial render of analytics
+  function renderAnalyticsCards(highest, lowest, regionFilter = null) {
+    const analyticsRoot = document.getElementById('market-analytics');
+    if(!analyticsRoot) return;
+
+    const regionLabel = regionFilter ? ` (${regionFilter})` : '';
+    
     const highestHTML = highest.length > 0 
       ? highest.map(p => `<li data-product="${p.name.toLowerCase().replace(/\s+/g, '-')}">${p.name} <span>KES ${Math.round(p.avgPrice)}/${p.units} (${p.count} listings)</span></li>`).join('')
-      : '<li>No marketplace data available</li>';
+      : `<li>No marketplace data available${regionFilter ? ' for this region' : ''}</li>`;
     
     const lowestHTML = lowest.length > 0
       ? lowest.map(p => `<li data-product="${p.name.toLowerCase().replace(/\s+/g, '-')}">${p.name} <span>KES ${Math.round(p.avgPrice)}/${p.units} (${p.count} listings)</span></li>`).join('')
-      : '<li>No marketplace data available</li>';
+      : `<li>No marketplace data available${regionFilter ? ' for this region' : ''}</li>`;
 
     analyticsRoot.innerHTML = `
       <div class="analytics-card" id="high-moving-products">
-        <h3>Highest Moving Products</h3>
+        <h3>Highest Moving Products${regionLabel}</h3>
         <p class="click-hint">Based on marketplace activity</p>
         <ul class="product-list">
           ${highestHTML}
@@ -91,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async function(){
       </div>
 
       <div class="analytics-card" id="low-moving-products">
-        <h3>Lowest Moving Products</h3>
+        <h3>Lowest Moving Products${regionLabel}</h3>
         <p class="click-hint">Based on marketplace activity</p>
         <ul class="product-list">
           ${lowestHTML}
@@ -109,29 +256,28 @@ document.addEventListener('DOMContentLoaded', async function(){
         <div class="chart-container"><canvas id="commodityTrendsChart"></canvas></div>
       </div>
     `;
+
+    // Re-populate product search after render
+    populateProductSearch();
+    // Re-initialize chart after render
+    initializeTrendsChart();
   }
 
-  // Product detail toggles
-  document.querySelectorAll('.product-list li').forEach(li=>{
-    li.addEventListener('click', function(){
-      const product = this.getAttribute('data-product');
-      const card = this.closest('.analytics-card');
-      card.querySelectorAll('.product-detail').forEach(d=>d.classList.remove('active'));
-      const target = card.querySelector(`#${product}-detail`);
-      if(target) target.classList.add('active');
-    });
-  });
+  // Initial analytics render
+  updateAnalytics();
 
   // Populate product search dropdown
-  const productSearch = document.getElementById('product-search');
-  if (productSearch && marketListings.length > 0) {
-    const uniqueProducts = [...new Set(marketListings.map(l => l.item))].sort();
-    uniqueProducts.forEach(product => {
-      const option = document.createElement('option');
-      option.value = product;
-      option.textContent = product;
-      productSearch.appendChild(option);
-    });
+  function populateProductSearch() {
+    const productSearch = document.getElementById('product-search');
+    if (productSearch && marketListings.length > 0) {
+      const uniqueProducts = [...new Set(marketListings.map(l => l.item))].sort();
+      uniqueProducts.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product;
+        option.textContent = product;
+        productSearch.appendChild(option);
+      });
+    }
   }
 
   // Generate mock 30-day trend data for a product
@@ -149,69 +295,81 @@ document.addEventListener('DOMContentLoaded', async function(){
 
   // Commodity trends chart with product search
   let commodityChart = null;
-  try{
-    const ctx = document.getElementById('commodityTrendsChart').getContext('2d');
-    
-    // Initial empty chart
-    commodityChart = new Chart(ctx, {
-      type:'line',
-      data:{
-        labels: Array.from({length: 30}, (_, i) => `Day ${i + 1}`),
-        datasets:[]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins: {
-          legend: { display: true, position: 'top' }
+  
+  function initializeTrendsChart() {
+    try{
+      const canvas = document.getElementById('commodityTrendsChart');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      
+      // Destroy existing chart if any
+      if (commodityChart) {
+        commodityChart.destroy();
+      }
+      
+      // Initial empty chart
+      commodityChart = new Chart(ctx, {
+        type:'line',
+        data:{
+          labels: Array.from({length: 30}, (_, i) => `Day ${i + 1}`),
+          datasets:[]
         },
-        scales: {
-          y: {
-            beginAtZero: false,
-            ticks: {
-              callback: function(value) {
-                return 'KES ' + value;
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins: {
+            legend: { display: true, position: 'top' }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                callback: function(value) {
+                  return 'KES ' + value;
+                }
               }
             }
           }
         }
-      }
-    });
-
-    // Update chart when product is selected
-    if (productSearch) {
-      productSearch.addEventListener('change', function() {
-        const selectedProduct = this.value;
-        if (!selectedProduct) {
-          commodityChart.data.datasets = [];
-          commodityChart.update();
-          return;
-        }
-
-        // Find the product's average price
-        const productListings = marketListings.filter(l => l.item === selectedProduct);
-        if (productListings.length === 0) return;
-
-        const avgPrice = productListings.reduce((sum, l) => sum + (l.price || 0), 0) / productListings.length;
-        const units = productListings[0].units || 'kg';
-        
-        // Generate 30-day trend
-        const trendData = generate30DayTrend(avgPrice);
-        
-        commodityChart.data.datasets = [{
-          label: `${selectedProduct} (KES/${units})`,
-          data: trendData,
-          tension: 0.4,
-          borderColor: '#2E7D32',
-          fill: true,
-          backgroundColor: 'rgba(46,125,50,0.1)'
-        }];
-        
-        commodityChart.update();
       });
+
+      // Update chart when product is selected
+      const productSearch = document.getElementById('product-search');
+      if (productSearch) {
+        productSearch.addEventListener('change', function() {
+          const selectedProduct = this.value;
+          if (!selectedProduct) {
+            commodityChart.data.datasets = [];
+            commodityChart.update();
+            return;
+          }
+
+          // Find the product's average price
+          const productListings = marketListings.filter(l => l.item === selectedProduct);
+          if (productListings.length === 0) return;
+
+          const avgPrice = productListings.reduce((sum, l) => sum + (l.price || 0), 0) / productListings.length;
+          const units = productListings[0].units || 'kg';
+          
+          // Generate 30-day trend
+          const trendData = generate30DayTrend(avgPrice);
+          
+          commodityChart.data.datasets = [{
+            label: `${selectedProduct} (KES/${units})`,
+            data: trendData,
+            tension: 0.4,
+            borderColor: '#2E7D32',
+            fill: true,
+            backgroundColor: 'rgba(46,125,50,0.1)'
+          }];
+          
+          commodityChart.update();
+        });
+      }
+    }catch(e){
+      console.warn('Chart init error', e);
     }
-  }catch(e){
-    console.warn('Chart init error', e);
   }
 
   // Alerts container

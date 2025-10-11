@@ -59,6 +59,13 @@ const requireRole = (...roles) => (req, res, next) => {
   next();
 };
 
+// ==================== CONFIG ROUTES ====================
+
+// Mapbox token endpoint
+app.get('/api/config/mapbox-token', (req, res) => {
+  res.json({ token: process.env.MAPBOX_PUBLIC_KEY || '' });
+});
+
 // ==================== AUTH ROUTES ====================
 
 app.post('/api/auth/register', async (req, res) => {

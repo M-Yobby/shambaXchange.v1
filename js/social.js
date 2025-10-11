@@ -70,9 +70,10 @@ function renderPosts(posts) {
                 ${p.media ? (p.media.includes('video') ? `<video controls src="${p.media}" style="max-width:100%"></video>` : `<img src="${p.media}" style="max-width:100%">`) : ''}
             </div>
             <div class="actions">
-                <button onclick="handleLike('${p.id}')">Like (${p.likes})</button>
-                <button onclick="toggleCommentBox('${p.id}')">Comment (${p.comments.length})</button>
-                <button onclick="handleShare('${p.id}')">Share</button>
+                <button onclick="handleLike('${p.id}')"><i class="fas fa-heart"></i> Like (${p.likes})</button>
+                <button onclick="toggleCommentBox('${p.id}')"><i class="fas fa-comment"></i> Comment (${p.comments.length})</button>
+                <button onclick="handleMessage('${p.user.name}')"><i class="fas fa-envelope"></i> Message</button>
+                <button onclick="handleShare('${p.id}')"><i class="fas fa-share"></i> Share</button>
             </div>
             <div class="comments" id="comments-${p.id}" style="display:none; margin-top:10px;"></div>
             <div class="comment-box" id="comment-box-${p.id}" style="display:none; margin-top:8px;">
@@ -123,51 +124,11 @@ function renderMostEngaged(list) {
     });
 }
 
-// sample data (dummy)
+// sample data (no placeholders - starts empty)
 const sampleData = {
-    posts: [
-        { 
-            id:'p1', 
-            user:{name:'Amina', avatar:'../assets/images/M.yobby.jpg'}, 
-            text:'Harvest was good this week! #blessed', 
-            media:null, 
-            likes:8, 
-            comments:[
-                {id:'c1', text:'Congratulations! What crop?', user:{name:'John'}},
-                {id:'c2', text:'Amazing! Keep up the good work', user:{name:'Mary'}},
-                {id:'c3', text:'Blessings from Nakuru!', user:{name:'Peter'}}
-            ] 
-        },
-        { 
-            id:'p2', 
-            user:{name:'Otieno', avatar:'../assets/images/M.yobby.jpg'}, 
-            text:'Selling fresh tomatoes, inbox me.', 
-            media:null, 
-            likes:5, 
-            comments:[
-                {id:'c4', text:'How much per kg?', user:{name:'Sarah'}},
-                {id:'c5', text:'I am interested!', user:{name:'James'}}
-            ] 
-        },
-        { 
-            id:'p3', 
-            user:{name:'Grace', avatar:'../assets/images/M.yobby.jpg'}, 
-            text:'Just bought a new tractor! Excited to increase productivity', 
-            media:null, 
-            likes:12, 
-            comments:[
-                {id:'c6', text:'That is great news!', user:{name:'David'}}
-            ] 
-        }
-    ],
-    trending: [
-        { id:'t1', title:'Maize prices spike', excerpt:'Local maize prices rose 12% this week.'},
-        { id:'t2', title:'New pest reported', excerpt:'Farmers report a new pest affecting beans.'}
-    ],
-    mostEngaged:[
-        { id:'u1', name:'Amina', avatar:'../assets/images/M.yobby.jpg', score: 142 },
-        { id:'u2', name:'Otieno', avatar:'../assets/images/M.yobby.jpg', score: 101 }
-    ]
+    posts: [],
+    trending: [],
+    mostEngaged:[]
 };
 
 // UI handlers
@@ -182,6 +143,13 @@ async function handleLike(id) {
     await likePost(id);
     renderPosts(sampleData.posts);
 }
+
+// Make functions globally available
+window.handleLike = handleLike;
+window.handleMessage = handleMessage;
+window.handleShare = handleShare;
+window.toggleCommentBox = toggleCommentBox;
+window.submitComment = submitComment;
 
 function toggleCommentBox(id) {
     const box = document.getElementById('comment-box-'+id);
@@ -223,6 +191,16 @@ async function submitComment(id) {
     renderTrending(await fetchTrending());
 }
 
+function handleMessage(userName) {
+    // Simple messaging interface
+    const message = prompt(`Send a message to ${userName}:`);
+    if (message && message.trim()) {
+        alert(`Message sent to ${userName}:\n"${message}"\n\n(In production, this would use real-time messaging)`);
+        // TODO: Implement real messaging API
+        // fetch('/api/messages', { method: 'POST', body: JSON.stringify({ to: userName, message }) })
+    }
+}
+
 function handleShare(id) {
     // placeholder for share behavior (POST /api/social/share/:id)
     alert('Share link copied to clipboard (placeholder)');
@@ -231,11 +209,43 @@ function handleShare(id) {
 // form handling
 document.addEventListener('DOMContentLoaded', ()=>{
     const postForm = document.getElementById('post-form');
+    const mediaInput = document.getElementById('post-media');
+    const fileSizeError = document.getElementById('file-size-error');
+    
+    // File size validation (10MB limit)
+    if (mediaInput) {
+        mediaInput.addEventListener('change', function() {
+            const file = this.files[0];
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            
+            if (file && file.size > maxSize) {
+                fileSizeError.style.display = 'inline';
+                this.value = ''; // Clear the file
+                setTimeout(() => {
+                    fileSizeError.style.display = 'none';
+                }, 3000);
+            }
+        });
+    }
+    
     if (postForm) {
         postForm.addEventListener('submit', async (e)=>{
             e.preventDefault();
             const text = document.getElementById('post-text').value;
             const mediaInput = document.getElementById('post-media');
+            
+            // Check file size before submitting
+            if (mediaInput.files[0]) {
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                if (mediaInput.files[0].size > maxSize) {
+                    fileSizeError.style.display = 'inline';
+                    setTimeout(() => {
+                        fileSizeError.style.display = 'none';
+                    }, 3000);
+                    return;
+                }
+            }
+            
             const fd = new FormData();
             fd.append('text', text);
             if (mediaInput.files[0]) fd.append('media', mediaInput.files[0]);
