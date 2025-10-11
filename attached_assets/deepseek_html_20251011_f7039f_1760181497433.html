@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Mapbox Integration</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4264fb 0%, #42e2f4 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .text-content {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-container {
+            flex: 2;
+            min-width: 300px;
+            height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature h3 {
+            color: #4264fb;
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .map-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Interactive Map Integration</h1>
+        <p class="subtitle">Explore locations with our integrated Mapbox solution</p>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <div class="text-content">
+                <h2>Discover the World Around You</h2>
+                <p>This interactive map showcases the power of Mapbox integration in a modern web application. With smooth navigation, detailed layers, and customizable markers, you can explore any location with ease.</p>
+                <p>Simply pan and zoom to navigate the map, or use the search function to find specific places of interest. The map includes points of interest, transportation routes, and natural features.</p>
+                <div class="features">
+                    <div class="feature">
+                        <h3>Interactive Navigation</h3>
+                        <p>Pan, zoom, and rotate the map for a complete view of any location.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Custom Markers</h3>
+                        <p>Add and customize markers to highlight important locations.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Multiple Layers</h3>
+                        <p>Switch between different map styles and data layers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Interactive Map Integration &copy; 2023 | Powered by Mapbox</p>
+    </footer>
+
+    <script>
+        // Replace 'YOUR_MAPBOX_PUBLIC_KEY' with your actual Mapbox public key
+        mapboxgl.accessToken = 'YOUR_MAPBOX_PUBLIC_KEY';
+        
+        // Initialize the map
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-74.006, 40.7128], // Default center (New York City)
+            zoom: 10
+        });
+
+        // Add navigation controls
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Add geolocate control
+        map.addControl(new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true,
+            showUserLocation: true
+        }));
+
+        // Add a marker when the map loads
+        map.on('load', () => {
+            // Add a marker at the center
+            new mapboxgl.Marker()
+                .setLngLat([-74.006, 40.7128])
+                .setPopup(new mapboxgl.Popup().setHTML('<h3>New York City</h3><p>The Big Apple</p>'))
+                .addTo(map);
+            
+            // Add a second marker
+            new mapboxgl.Marker({ color: '#4264fb' })
+                .setLngLat([-73.935242, 40.730610])
+                .setPopup(new mapboxgl.Popup().setHTML('<h3>Queens</h3><p>One of NYC\'s boroughs</p>'))
+                .addTo(map);
+        });
+
+        // Handle any map errors
+        map.on('error', (e) => {
+            console.error('Map error:', e);
+            document.getElementById('map').innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 100%; background: #f0f0f0; color: #666;">
+                    <div style="text-align: center;">
+                        <h3>Map Loading Error</h3>
+                        <p>Please check your Mapbox public key and try again.</p>
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
