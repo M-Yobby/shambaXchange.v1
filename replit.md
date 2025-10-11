@@ -128,7 +128,8 @@ ShambaXchange is a comprehensive web-based agricultural platform connecting farm
   - API URL now correctly uses HTTPS when accessed via Replit's proxy
   - Fixed "getting logged out" issue when switching between pages
 - **Fixed Missing Icons (October 11, 2025)**:
-  - Fixed Font Awesome CSS links in social.html and marketplace.html
+  - Fixed Font Awesome CSS links in social.html, marketplace.html, and market.html
   - Changed from incorrect `<script src="...css">` to proper `<link rel="stylesheet">`
   - All pages now have correct Font Awesome CSS loaded
   - Icons (including shambaXchange logo) now display properly on all pages
+  - Market Intelligence page icons now working
