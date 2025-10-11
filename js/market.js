@@ -26,6 +26,45 @@ document.addEventListener('DOMContentLoaded', async function(){
     marketListings = [];
   }
 
+  // Helper function to render regional analytics (defined early so it's available everywhere)
+  function renderRegionalAnalytics(data) {
+    const analyticsRoot = document.getElementById('market-analytics');
+    if (!analyticsRoot) return;
+
+    const highestHTML = data.highestMoving.length > 0 
+      ? data.highestMoving.map(p => `
+          <li>${p.name} 
+            <span>KES ${p.avgPrice}/${p.category || 'unit'} (${p.count} listings, ${p.totalQuantity} total)</span>
+          </li>
+        `).join('')
+      : '<li>No data available</li>';
+
+    const lowestHTML = data.lowestMoving.length > 0 
+      ? data.lowestMoving.map(p => `
+          <li>${p.name} 
+            <span>KES ${p.avgPrice}/${p.category || 'unit'} (${p.count} listings, ${p.totalQuantity} total)</span>
+          </li>
+        `).join('')
+      : '<li>No data available</li>';
+
+    analyticsRoot.innerHTML = `
+      <div class="analytics-card">
+        <div class="analytics-header">
+          <h3><i class="fas fa-arrow-trend-up"></i> Highest Moving Products</h3>
+          <span class="analytics-badge">${data.location}</span>
+        </div>
+        <ul class="analytics-list">${highestHTML}</ul>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-header">
+          <h3><i class="fas fa-arrow-trend-down"></i> Lowest Moving Products</h3>
+          <span class="analytics-badge">${data.location}</span>
+        </div>
+        <ul class="analytics-list">${lowestHTML}</ul>
+      </div>
+    `;
+  }
+
   // Initialize Mapbox map
   initializeMap();
 
@@ -108,24 +147,43 @@ document.addEventListener('DOMContentLoaded', async function(){
       });
   }
 
-  // Make selectRegion available globally for popup button
-  window.selectRegionFromMap = selectRegion;
-
-  function selectRegion(regionName) {
+  async function selectRegion(regionName) {
     selectedRegion = regionName;
     const regionInfo = document.getElementById('selected-region-info');
     if (regionInfo) {
-      const region = kenyaRegions.find(r => r.name === regionName);
-      regionInfo.innerHTML = `
-        <i class="fas fa-location-dot"></i> 
-        <strong>${regionName}</strong> - 
-        Key Products: ${region.products.join(', ')}
-      `;
+      regionInfo.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading ${regionName} data...`;
     }
     
-    // Update analytics based on region
-    updateAnalytics(regionName);
+    // Use API to get regional data instead of client-side filtering
+    try {
+      const response = await api.request(`/api/market/regional?location=${encodeURIComponent(regionName)}`);
+      
+      if (regionInfo) {
+        regionInfo.innerHTML = `
+          <i class="fas fa-location-dot"></i> Viewing: ${response.location} - ${response.region} Region (${response.totalListings} listings)
+        `;
+      }
+      
+      // Update analytics with regional data from API (use window. to ensure we're calling the same function)
+      window.renderRegionalAnalytics(response);
+    } catch (error) {
+      console.error('Region selection error:', error);
+      // Fallback to client-side filtering
+      if (regionInfo) {
+        const region = kenyaRegions.find(r => r.name === regionName);
+        regionInfo.innerHTML = `
+          <i class="fas fa-location-dot"></i> 
+          <strong>${regionName}</strong> - 
+          Key Products: ${region.products.join(', ')}
+        `;
+      }
+      updateAnalytics(regionName);
+    }
   }
+
+  // Make selectRegion and renderRegionalAnalytics available globally for popup button (AFTER function definitions)
+  window.selectRegionFromMap = selectRegion;
+  window.renderRegionalAnalytics = renderRegionalAnalytics;
 
   // Map counties/cities to agricultural regions (all 47 counties of Kenya)
   const locationToRegion = {
@@ -426,44 +484,6 @@ document.addEventListener('DOMContentLoaded', async function(){
       locationResult.innerHTML = '<i class="fas fa-times-circle"></i> Could not find market data for this location';
       locationResult.style.color = '#f44336';
     }
-  }
-
-  function renderRegionalAnalytics(data) {
-    const analyticsRoot = document.getElementById('market-analytics');
-    if (!analyticsRoot) return;
-
-    const highestHTML = data.highestMoving.length > 0 
-      ? data.highestMoving.map(p => `
-          <li>${p.name} 
-            <span>KES ${p.avgPrice}/${p.category || 'unit'} (${p.count} listings, ${p.totalQuantity} total)</span>
-          </li>
-        `).join('')
-      : '<li>No data available</li>';
-
-    const lowestHTML = data.lowestMoving.length > 0 
-      ? data.lowestMoving.map(p => `
-          <li>${p.name} 
-            <span>KES ${p.avgPrice}/${p.category || 'unit'} (${p.count} listings, ${p.totalQuantity} total)</span>
-          </li>
-        `).join('')
-      : '<li>No data available</li>';
-
-    analyticsRoot.innerHTML = `
-      <div class="analytics-card">
-        <div class="analytics-header">
-          <h3><i class="fas fa-arrow-trend-up"></i> Highest Moving Products</h3>
-          <span class="analytics-badge">${data.location}</span>
-        </div>
-        <ul class="analytics-list">${highestHTML}</ul>
-      </div>
-      <div class="analytics-card">
-        <div class="analytics-header">
-          <h3><i class="fas fa-arrow-trend-down"></i> Lowest Moving Products</h3>
-          <span class="analytics-badge">${data.location}</span>
-        </div>
-        <ul class="analytics-list">${lowestHTML}</ul>
-      </div>
-    `;
   }
 
   // Attach search handler

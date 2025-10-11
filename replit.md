@@ -52,6 +52,24 @@ ShambaXchange is a comprehensive web-based agricultural platform connecting farm
 
 ## Recent Changes (October 11, 2025)
 
+### Market Intelligence Location Search & Header Optimization
+- **Location Search Feature**: Added search bar on Market Intelligence page to find regional market data
+  - Users can search by county/location (e.g., Nairobi, Nakuru, Kisumu)
+  - Displays highest and lowest moving products from that region
+  - Data is calculated from marketplace listings (aggregated averages)
+  - Shows total listings count and region classification
+- **Regional Market Analytics API**: New `/api/market/regional` endpoint
+  - Filters marketplace listings by location
+  - Calculates product statistics (total quantity, average price, listing count)
+  - Returns highest and lowest moving products (top 5 each)
+  - Includes Kenya's 47 counties mapped to 8 agricultural regions
+- **Optimized Header Layout**: Combined two-line header into single-line for faster page loads
+  - Logo and navigation now on same line (left-aligned logo, right-aligned navigation)
+  - Reduced header height and complexity
+  - Improved page load performance
+
+## Recent Changes (October 11, 2025)
+
 ### Farmer Dashboard Enhancements
 - **Product Tracking System**: Renamed "Crop Progress" to "Product Tracking" with comprehensive support
   - Now supports crops, livestock, and poultry tracking
