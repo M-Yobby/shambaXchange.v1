@@ -658,6 +658,37 @@ app.get('/api/admin/users', authenticate, requireRole('admin'), async (req, res)
   }
 });
 
+// ==================== PAGE ROUTES ====================
+// Serve HTML pages with clean URLs (before static file serving)
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/dashboard.html'));
+});
+
+app.get('/market', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/market.html'));
+});
+
+app.get('/marketplace', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/marketplace.html'));
+});
+
+app.get('/social', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/social.html'));
+});
+
+app.get('/admin-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/admin-dashboard.html'));
+});
+
+app.get('/sponsor-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/sponsor-dashboard.html'));
+});
+
 // Serve static files AFTER all API routes (so API routes take precedence)
 app.use(express.static('.'));
 

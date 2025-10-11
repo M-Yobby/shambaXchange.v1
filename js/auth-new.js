@@ -44,9 +44,9 @@ async function initializeAuth() {
     // Initialize appropriate components based on current page
     const path = window.location.pathname.toLowerCase();
     const page = path.substring(path.lastIndexOf('/') + 1);
-    const authPages = ['index.html', 'login.html', 'register.html', ''];
+    const authPages = ['index.html', 'login.html', 'register.html', '', '/'];
     
-    if (authPages.includes(page)) {
+    if (authPages.includes(page) || path === '/' || path === '/index.html') {
         initializeAuthPages();
     } else {
         initializeUserFeatures();
@@ -73,27 +73,27 @@ function populateNavigationMenu() {
 
     const roleMenus = {
         farmer: [
-            { href: 'dashboard.html', icon: 'fa-tachometer-alt', text: 'Dashboard', page: 'dashboard' },
-            { href: 'market.html', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
-            { href: 'marketplace.html', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: 'social.html', icon: 'fa-users', text: 'Social', page: 'social' },
+            { href: '/dashboard', icon: 'fa-tachometer-alt', text: 'Farm Dashboard', page: 'dashboard' },
+            { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
+            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
+            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
         ],
         trader: [
-            { href: 'dashboard.html', icon: 'fa-tachometer-alt', text: 'Dashboard', page: 'dashboard', farmerOnly: true },
-            { href: 'market.html', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
-            { href: 'marketplace.html', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: 'social.html', icon: 'fa-users', text: 'Social', page: 'social' },
+            { href: '/dashboard', icon: 'fa-tachometer-alt', text: 'Dashboard', page: 'dashboard', farmerOnly: true },
+            { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
+            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
+            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
         ],
         sponsor: [
-            { href: 'sponsor-dashboard.html', icon: 'fa-bullhorn', text: 'Sponsor Dashboard', page: 'sponsor-dashboard' },
-            { href: 'marketplace.html', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: 'social.html', icon: 'fa-users', text: 'Social', page: 'social' },
+            { href: '/sponsor-dashboard', icon: 'fa-bullhorn', text: 'Sponsor Dashboard', page: 'sponsor-dashboard' },
+            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
+            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
         ],
         admin: [
-            { href: 'admin-dashboard.html', icon: 'fa-shield-alt', text: 'Admin Dashboard', page: 'admin-dashboard' },
-            { href: 'market.html', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
-            { href: 'marketplace.html', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
-            { href: 'social.html', icon: 'fa-users', text: 'Social', page: 'social' },
+            { href: '/admin-dashboard', icon: 'fa-shield-alt', text: 'Admin Dashboard', page: 'admin-dashboard' },
+            { href: '/market', icon: 'fa-chart-bar', text: 'Market Intel', page: 'market' },
+            { href: '/marketplace', icon: 'fa-shopping-cart', text: 'Marketplace', page: 'marketplace' },
+            { href: '/social', icon: 'fa-users', text: 'Social', page: 'social' },
         ],
     };
 
@@ -101,11 +101,9 @@ function populateNavigationMenu() {
     
     menuItems.forEach(item => {
         const li = document.createElement('li');
-        const inViewsFolder = window.location.pathname.toLowerCase().includes('/views/');
-        const href = inViewsFolder ? item.href : `views/${item.href}`;
         
         const link = document.createElement('a');
-        link.href = href;
+        link.href = item.href;
         link.className = 'nav-link';
         link.setAttribute('data-page', item.page);
         link.innerHTML = `<i class="fas ${item.icon}"></i> ${item.text}`;
@@ -263,12 +261,12 @@ async function handleRegister(fullName, email, username, password, selectedRole)
 
 function getRedirectPath(role) {
     const paths = {
-        farmer: 'views/dashboard.html',
-        trader: 'views/market.html',
-        sponsor: 'views/sponsor-dashboard.html',
-        admin: 'views/admin-dashboard.html',
+        farmer: '/dashboard',
+        trader: '/market',
+        sponsor: '/sponsor-dashboard',
+        admin: '/admin-dashboard',
     };
-    return paths[role] || 'views/market.html';
+    return paths[role] || '/market';
 }
 
 async function updateUserHeader() {
@@ -418,22 +416,18 @@ function logout() {
     api.logout();
     localStorage.removeItem('currentUser');
     
-    // Handle logout from different locations
-    const currentPage = window.location.pathname;
-    if (currentPage.includes('/views/')) {
-        window.location.href = '../index.html';
-    } else {
-        window.location.href = 'index.html';
-    }
+    // Redirect to home page
+    window.location.href = '/';
 }
 
 function enforceAuth() {
     try {
         const path = window.location.pathname.toLowerCase();
         const page = path.substring(path.lastIndexOf('/') + 1);
-        const publicPages = ['index.html', 'login.html', 'register.html', ''];
+        const publicPages = ['index.html', 'login.html', 'register.html', '', '/'];
         
-        if (publicPages.includes(page)) return;
+        // Skip auth enforcement for public pages (including root and index)
+        if (publicPages.includes(page) || path === '/' || path === '/index.html') return;
         
         const user = getCurrentUser();
         const token = localStorage.getItem('authToken');
@@ -443,22 +437,25 @@ function enforceAuth() {
             if (currentPath.includes('/views/')) {
                 window.location.href = '../index.html';
             } else {
-                window.location.href = 'index.html';
+                window.location.href = '/';
             }
             return;
         }
 
         const role = user.role;
 
-        // Allowed pages per role
+        // Normalize page name (remove .html if present for comparison)
+        const normalizedPage = page.replace('.html', '');
+
+        // Allowed pages per role (without .html extension for clean URLs)
         const accessRules = {
-            farmer: ['dashboard.html', 'market.html', 'marketplace.html', 'social.html'],
-            trader: ['market.html', 'marketplace.html', 'social.html'],
-            sponsor: ['sponsor-dashboard.html', 'marketplace.html', 'social.html'],
-            admin: ['admin-dashboard.html', 'market.html', 'marketplace.html', 'social.html']
+            farmer: ['dashboard', 'market', 'marketplace', 'social'],
+            trader: ['market', 'marketplace', 'social'],
+            sponsor: ['sponsor-dashboard', 'marketplace', 'social'],
+            admin: ['admin-dashboard', 'market', 'marketplace', 'social']
         };
 
-        if (accessRules[role] && !accessRules[role].includes(page)) {
+        if (accessRules[role] && !accessRules[role].includes(normalizedPage)) {
             showNotification('You are not authorized to view this page', 'error');
             setTimeout(() => {
                 window.location.href = getRedirectPath(role);
@@ -468,7 +465,7 @@ function enforceAuth() {
 
     } catch (error) {
         console.error('Auth enforcement error:', error);
-        window.location.href = 'index.html';
+        window.location.href = '/';
     }
 }
 
