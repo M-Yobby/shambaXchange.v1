@@ -32,7 +32,134 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadCosts();
     await loadCrops();
     updateFinancialSummary();
+    updateAIRecommendations();
+    loadWeather();
 });
+
+// ---------- Weather Functionality ----------
+async function loadWeather() {
+    const weatherTemp = document.getElementById('weatherTemp');
+    const weatherLocation = document.getElementById('weatherLocation');
+    const weatherCondition = document.getElementById('weatherCondition');
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                try {
+                    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Africa/Nairobi`;
+                    const response = await fetch(weatherUrl);
+                    const data = await response.json();
+
+                    if (data.current_weather) {
+                        const temp = Math.round(data.current_weather.temperature);
+                        weatherTemp.textContent = `${temp}°C`;
+
+                        const locationResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+                        const locationData = await locationResponse.json();
+                        const city = locationData.address.city || locationData.address.town || locationData.address.village || 'Unknown';
+                        weatherLocation.textContent = `${city}, Kenya`;
+
+                        const weatherCode = data.current_weather.weathercode;
+                        weatherCondition.textContent = getWeatherDescription(weatherCode);
+                    }
+                } catch (error) {
+                    console.error('Weather fetch error:', error);
+                    weatherTemp.textContent = '--°C';
+                    weatherLocation.textContent = 'Weather unavailable';
+                    weatherCondition.textContent = 'Try again later';
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                weatherTemp.textContent = '26°C';
+                weatherLocation.textContent = 'Nairobi, Kenya';
+                weatherCondition.textContent = 'Enable location for local weather';
+            }
+        );
+    } else {
+        weatherTemp.textContent = '26°C';
+        weatherLocation.textContent = 'Nairobi, Kenya';
+        weatherCondition.textContent = 'Geolocation not supported';
+    }
+}
+
+function getWeatherDescription(code) {
+    const weatherCodes = {
+        0: 'Clear sky',
+        1: 'Mainly clear',
+        2: 'Partly cloudy',
+        3: 'Overcast',
+        45: 'Foggy',
+        48: 'Depositing rime fog',
+        51: 'Light drizzle',
+        53: 'Moderate drizzle',
+        55: 'Dense drizzle',
+        61: 'Slight rain',
+        63: 'Moderate rain',
+        65: 'Heavy rain',
+        71: 'Slight snow',
+        73: 'Moderate snow',
+        75: 'Heavy snow',
+        77: 'Snow grains',
+        80: 'Slight rain showers',
+        81: 'Moderate rain showers',
+        82: 'Violent rain showers',
+        85: 'Slight snow showers',
+        86: 'Heavy snow showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with slight hail',
+        99: 'Thunderstorm with heavy hail'
+    };
+    return weatherCodes[code] || 'Unknown';
+}
+
+document.getElementById('refreshWeather')?.addEventListener('click', loadWeather);
+
+function updateAIRecommendations() {
+    const recommendationsList = document.getElementById('aiRecommendationsList');
+    if (!recommendationsList) return;
+
+    let recommendations = [];
+
+    if (sales.length === 0 && crops.length === 0) {
+        recommendations = [
+            '<li><i class="fas fa-lightbulb"></i> Start by adding your products in Product Tracking to get personalized recommendations</li>',
+            '<li><i class="fas fa-lightbulb"></i> Track your sales to identify your best-performing products</li>'
+        ];
+    } else {
+        const productNames = crops.map(c => c.cropName.toLowerCase());
+        const saleProducts = sales.map(s => s.product.toLowerCase());
+        const allProducts = [...new Set([...productNames, ...saleProducts])];
+
+        if (allProducts.some(p => p.includes('maize') || p.includes('corn'))) {
+            recommendations.push('<li><i class="fas fa-lightbulb"></i> Maize prices are typically higher during off-season (July-September)</li>');
+        }
+        if (allProducts.some(p => p.includes('bean'))) {
+            recommendations.push('<li><i class="fas fa-lightbulb"></i> Consider intercropping beans with maize to improve soil fertility</li>');
+        }
+        if (allProducts.some(p => p.includes('potato'))) {
+            recommendations.push('<li><i class="fas fa-lightbulb"></i> Store potatoes in cool, dark places to prevent sprouting</li>');
+        }
+        if (allProducts.some(p => p.includes('chicken') || p.includes('poultry'))) {
+            recommendations.push('<li><i class="fas fa-lightbulb"></i> Ensure proper vaccination schedules for your poultry to prevent diseases</li>');
+        }
+        if (allProducts.some(p => p.includes('cow') || p.includes('cattle') || p.includes('livestock'))) {
+            recommendations.push('<li><i class="fas fa-lightbulb"></i> Regular deworming every 3 months improves livestock health and productivity</li>');
+        }
+
+        if (recommendations.length === 0) {
+            recommendations = [
+                '<li><i class="fas fa-lightbulb"></i> Check market prices regularly to sell at the best time</li>',
+                '<li><i class="fas fa-lightbulb"></i> Keep detailed records of your expenses to maximize profits</li>'
+            ];
+        }
+    }
+
+    recommendationsList.innerHTML = recommendations.slice(0, 3).join('');
+}
 
 async function loadSales() {
     try {
@@ -293,6 +420,7 @@ document.getElementById("saveSaleBtn").addEventListener("click", async () => {
         sales.push(newSale);
         updateSalesList();
         updateFinancialSummary();
+        updateAIRecommendations();
 
         // Reset form
         document.getElementById("saleProduct").value = "";
@@ -341,10 +469,11 @@ document.getElementById("saveCostBtn").addEventListener("click", async () => {
     }
 });
 
-// ---------- Add Crop ----------
+// ---------- Add Product ----------
 document.getElementById("cropForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
+    const productType = document.getElementById("productType").value;
     const cropName = document.getElementById("cropName").value;
     const fieldLocation = document.getElementById("fieldLocation").value;
     const plantingDate = document.getElementById("plantingDate").value;
@@ -352,6 +481,7 @@ document.getElementById("cropForm").addEventListener("submit", async (e) => {
     const notes = document.getElementById("cropNotes").value;
 
     const cropData = {
+        productType,
         cropName,
         fieldLocation,
         plantingDate,
@@ -363,6 +493,7 @@ document.getElementById("cropForm").addEventListener("submit", async (e) => {
         const newCrop = await api.createCrop(cropData);
         crops.push(newCrop);
         renderCropProgress();
+        updateAIRecommendations();
 
         // Reset form
         document.getElementById("cropForm").reset();

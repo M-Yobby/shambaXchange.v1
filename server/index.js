@@ -259,10 +259,11 @@ app.get('/api/crops', authenticate, requireRole('farmer'), async (req, res) => {
 
 app.post('/api/crops', authenticate, requireRole('farmer'), async (req, res) => {
   try {
-    const { cropName, fieldLocation, plantingDate, expectedHarvestDate, notes } = req.body;
+    const { productType, cropName, fieldLocation, plantingDate, expectedHarvestDate, notes } = req.body;
 
     const [newCrop] = await db.insert(crops).values({
       userId: req.user.id,
+      productType: productType || 'crop',
       cropName,
       fieldLocation,
       plantingDate: new Date(plantingDate),
@@ -284,7 +285,7 @@ app.post('/api/ai/chat', authenticate, requireRole('farmer'), async (req, res) =
     const systemPrompt = `You are AgriBot, an expert agricultural assistant for Kenyan farmers. Provide practical, actionable farming advice based on Kenyan context, climate, and crops. Keep responses concise and helpful.`;
     const fullPrompt = `${systemPrompt}\n\nFarmer: ${message}\n\nAgriBot:`;
 
-    const response = await fetch('https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct', {
+    const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
@@ -293,14 +294,21 @@ app.post('/api/ai/chat', authenticate, requireRole('farmer'), async (req, res) =
       body: JSON.stringify({
         inputs: fullPrompt,
         parameters: {
-          max_new_tokens: 250,
-          temperature: 0.8,
-          top_p: 0.9,
+          max_new_tokens: 200,
+          temperature: 0.7,
+          top_p: 0.95,
           do_sample: true,
           return_full_text: false,
         }
       })
     });
+
+    if (!response.ok) {
+      console.error('HuggingFace API error:', response.status, response.statusText);
+      return res.json({ 
+        response: 'I apologize, the AI service is currently unavailable. Please try again in a moment.' 
+      });
+    }
 
     const data = await response.json();
     console.log('HuggingFace raw response:', data);
@@ -309,7 +317,6 @@ app.post('/api/ai/chat', authenticate, requireRole('farmer'), async (req, res) =
     if (data[0]?.generated_text) {
       aiResponse = data[0].generated_text.trim();
       
-      // Remove the prompt if it's still included
       if (aiResponse.includes('AgriBot:')) {
         aiResponse = aiResponse.split('AgriBot:').pop().trim();
       }

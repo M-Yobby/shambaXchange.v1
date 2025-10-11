@@ -84,6 +84,7 @@ export const sponsorContent = pgTable("sponsor_content", {
 export const crops = pgTable("crops", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
+  productType: text("product_type").notNull().default('crop'), // 'crop', 'livestock', 'poultry'
   cropName: text("crop_name").notNull(),
   fieldLocation: text("field_location").notNull(),
   plantingDate: timestamp("planting_date").notNull(),
