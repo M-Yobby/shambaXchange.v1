@@ -41,10 +41,52 @@ ShambaXchange is a comprehensive web-based agricultural platform connecting farm
 
 ## External Dependencies
 - **PostgreSQL (Neon)**: Production-grade relational database for data persistence.
-- **Hugging Face API**: AI assistant integration for farmer support and contextual agricultural advice.
+- **Hugging Face API**: AI assistant integration using Mistral 7B model for farmer support and contextual agricultural advice.
+- **Open-Meteo API**: Free weather API for location-based real-time weather data (no API key required).
 - **Mapbox GL JS**: Interactive mapping for regional market overviews.
 - **Chart.js**: JavaScript library for data visualization and interactive charts.
 - **Font Awesome**: Icon library for UI elements.
 - **Multer**: Node.js middleware for handling multipart/form-data, primarily used for file uploads.
 - **bcrypt**: Library for hashing passwords.
 - **jsonwebtoken (JWT)**: For secure token-based authentication.
+
+## Recent Changes (October 11, 2025)
+
+### Farmer Dashboard Enhancements
+- **Product Tracking System**: Renamed "Crop Progress" to "Product Tracking" with comprehensive support
+  - Now supports crops, livestock, and poultry tracking
+  - Added productType field to database schema with safe defaults
+  - Updated modal forms with product type dropdown selection
+  - Changed labels to be more inclusive (Start Date, Expected Ready/Harvest Date)
+- **Dynamic AI Recommendations**: AI recommendations now based on farmer's actual products
+  - Analyzes farmer's sales history and tracked products in real-time
+  - Provides specific recommendations for maize, beans, potatoes, livestock, and poultry
+  - Updates automatically when new products or sales are added
+  - Context-aware advice based on product types
+- **Fixed AI Chatbot (AgriBot)**: Improved reliability and error handling
+  - Changed from Llama 3.2 to Mistral 7B model for better performance and stability
+  - Added comprehensive error handling for API failures
+  - Better response parsing with fallback messages
+  - Graceful degradation when AI service is unavailable
+- **Location-Based Weather Integration**: Real-time weather based on farmer's location
+  - Uses Open-Meteo API (no API key required) for weather data
+  - Gets user's location via browser geolocation with permission
+  - Displays temperature, city/town, and weather conditions
+  - Includes refresh button for manual weather updates
+  - Falls back to Nairobi weather if location permission is denied
+  - Uses OpenStreetMap for reverse geocoding to show city names
+- **Navigation Icons**: Verified and harmonized across all pages via dynamic menu system
+- **Registration CORS**: Analyzed and confirmed CORS is correctly configured for all origins
+
+### Interactive Mapbox Map & Regional Analytics
+- Integrated Mapbox GL JS for Regional Market Overview
+- Shows Kenya's 8 main agricultural regions with interactive markers
+- Click regions to filter Highest/Lowest Moving Products
+- Complete county-to-region mapping for all 47 Kenyan counties
+- Region-based analytics with proper normalization
+
+### Social Feed & Marketplace
+- Removed placeholder posts - starts with clean slate
+- Added 10MB file size limit for media uploads with error messaging
+- User-to-user messaging feature with "Message" buttons
+- Fixed Buy/Sell toggle buttons with proper active states
